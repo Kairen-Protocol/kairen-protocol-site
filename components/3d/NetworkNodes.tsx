@@ -2,6 +2,7 @@
 
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { Line } from '@react-three/drei';
 import * as THREE from 'three';
 
 export default function NetworkNodes() {
@@ -54,20 +55,15 @@ export default function NetworkNodes() {
       {nodes.map((node, i) => {
         if (i < nodes.length - 1) {
           const nextNode = nodes[i + 1];
-          const points = [
-            new THREE.Vector3(...node.position),
-            new THREE.Vector3(...nextNode.position),
-          ];
-          const geometry = new THREE.BufferGeometry().setFromPoints(points);
 
           return (
-            <line key={`line-${i}`} geometry={geometry}>
-              <lineBasicMaterial
-                color="#3b82f6"
-                opacity={0.2}
-                transparent
-              />
-            </line>
+            <Line
+              key={`line-${i}`}
+              points={[node.position, nextNode.position]}
+              color="#3b82f6"
+              transparent
+              opacity={0.2}
+            />
           );
         }
         return null;
