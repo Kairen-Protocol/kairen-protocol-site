@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Shield, Terminal, Database, FileText, Activity, Network } from 'lucide-react';
+import { Shield, Terminal, Database, FileText, Activity, Network, Check, AlertCircle } from 'lucide-react';
 import UserTypeToggle from '@/components/UserTypeToggle';
 
 export default function Home() {
   const [currentWord, setCurrentWord] = useState(0);
   const words = ['IDENTITY', 'NETWORK', 'MARKETPLACE', 'PAYMENTS', 'REPUTATION'];
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -15,6 +19,39 @@ export default function Home() {
     }, 2000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleWaitlistSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+    setErrorMessage('');
+
+    try {
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setSubmitStatus('error');
+        setErrorMessage(data.error || 'An error occurred. Please try again.');
+        return;
+      }
+
+      setSubmitStatus('success');
+      setEmail('');
+    } catch (error) {
+      setSubmitStatus('error');
+      setErrorMessage('Network error. Please check your connection and try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black text-green-400 relative overflow-hidden">
@@ -230,15 +267,43 @@ export default function Home() {
               // MINT YOUR KAIREN PASS • BUILD REPUTATION • UNLOCK INFRASTRUCTURE
             </p>
 
-            <form className="flex gap-4 mb-6">
-              <input
-                type="email"
-                placeholder="ENTER EMAIL ADDRESS..."
-                className="flex-1 px-4 py-3 bg-black border-2 border-green-500/30 text-green-400 placeholder-green-500/30 focus:border-green-500 focus:outline-none font-mono transition-all"
-              />
-              <button type="submit" className="cyber-btn-yellow">
-                JOIN NOW →
-              </button>
+            <form onSubmit={handleWaitlistSubmit} className="space-y-4 mb-6">
+              <div className="flex gap-4">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="ENTER EMAIL ADDRESS..."
+                  required
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-3 bg-black border-2 border-green-500/30 text-green-400 placeholder-green-500/30 focus:border-green-500 focus:outline-none font-mono transition-all disabled:opacity-50"
+                />
+                <button
+                  type="submit"
+                  className="cyber-btn-yellow"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'SUBMITTING...' : 'JOIN NOW →'}
+                </button>
+              </div>
+
+              {submitStatus === 'success' && (
+                <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/30">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <p className="text-xs text-green-400 font-mono">
+                    SUCCESS! Check your email to configure your beta access.
+                  </p>
+                </div>
+              )}
+
+              {submitStatus === 'error' && (
+                <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/30">
+                  <AlertCircle className="h-4 w-4 text-red-500" />
+                  <p className="text-xs text-red-400 font-mono">
+                    {errorMessage}
+                  </p>
+                </div>
+              )}
             </form>
 
             <p className="text-xs text-green-500/50 font-mono">
