@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import {
+  validateInput,
+  getClientIp,
+  isSuspiciousRequest,
+} from '@/lib/security';
 
 // Initialize Resend for email
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
@@ -51,31 +56,60 @@ function checkRateLimitMemory(identifier: string): { success: boolean; remaining
   return { success: true, remaining: 3 - current.count };
 }
 
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+  'https://kairen.xyz',
+  'https://www.kairen.xyz',
+  process.env.NEXT_PUBLIC_BASE_URL,
+  ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : []),
+].filter(Boolean);
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    // CORS check
+    const origin = request.headers.get('origin');
+    if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+      return NextResponse.json(
+        { error: 'CORS policy violation' },
+        { status: 403 }
+      );
+    }
+
+    // Check for suspicious requests
+    const userAgent = request.headers.get('user-agent');
+    if (isSuspiciousRequest(userAgent)) {
+      return NextResponse.json(
+        { error: 'Access denied' },
+        { status: 403 }
+      );
+    }
+
+    // Parse and validate body
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid request body' },
+        { status: 400 }
+      );
+    }
+
     const { email } = body;
 
-    // Validate email
-    if (!email || typeof email !== 'string') {
+    // Validate email using security utilities
+    const validation = validateInput(email, 'email');
+    if (!validation.valid) {
       return NextResponse.json(
-        { error: 'Valid email address is required' },
+        { error: validation.error || 'Invalid email address' },
         { status: 400 }
       );
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
-      );
-    }
+    const sanitizedEmail = validation.sanitized!;
 
-    // Rate limiting
-    const identifier = request.headers.get('x-forwarded-for') ||
-                      request.headers.get('x-real-ip') ||
-                      'anonymous';
+    // Rate limiting using security utility
+    const identifier = getClientIp(request);
 
     let rateLimitResult;
 
@@ -106,7 +140,7 @@ export async function POST(request: NextRequest) {
     if (resend) {
       const configToken = Buffer.from(
         JSON.stringify({
-          email,
+          email: sanitizedEmail,
           timestamp: Date.now(),
           action: 'beta_signup'
         })
@@ -116,7 +150,7 @@ export async function POST(request: NextRequest) {
 
       await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL || 'onboarding@kairen.xyz',
-        to: email,
+        to: sanitizedEmail,
         subject: 'Configure Your Kairen Beta Access',
         html: `
           <!DOCTYPE html>
@@ -211,8 +245,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Store email in database (you'll need to implement this)
-    // For now, just log it
-    console.log(`[WAITLIST] New signup: ${email} from ${identifier}`);
+    // For now, just log it (sanitized for security)
+    console.log(`[WAITLIST] New signup: ${sanitizedEmail} from ${identifier}`);
 
     return NextResponse.json(
       {

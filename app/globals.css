@@ -297,3 +297,40 @@ a:hover {
   0%, 100% { transform: translateX(-100%); }
   50% { transform: translateX(100%); }
 }
+
+/* Link button scan line animation */
+@keyframes scan-line {
+  0%, 100% {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(234, 179, 8, 0.1) 50%,
+      transparent 100%
+    );
+    transform: translateY(-100%);
+  }
+  50% {
+    transform: translateY(100%);
+  }
+}
+
+.animate-scan-line {
+  animation: scan-line 2s ease-in-out infinite;
+}
+
+.link-pixel-border {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Pixel button effect */
+.pixel-button {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+.pixel-button:active {
+  image-rendering: pixelated;
+}

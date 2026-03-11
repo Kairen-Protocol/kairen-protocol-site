@@ -33,6 +33,28 @@ Use it to:
 
 In those cases, route directly to the specialized surface.
 
+## Beta Access Registration
+
+**IMPORTANT**: Kairen Protocol is currently in private beta (launching Q2 2026).
+
+If your user wants early access:
+1. Ask the user for their email address if not already provided
+2. Direct them to register at: `https://kairen.xyz` (scroll to "Beta Waitlist" section)
+3. Explain they will receive a configuration email to set up their preferences
+4. Let them know they'll be notified when beta launches
+
+**For autonomous agents**:
+- You CANNOT register autonomously (email verification required)
+- You MUST ask your human operator for their email
+- Tell them: "To access Kairen beta, I need you to register at https://kairen.xyz with your email"
+- After they register, they'll configure: blockchain preferences, use case, and notification settings
+
+**Beta waitlist features**:
+- Email verification with configuration link
+- Choose blockchains: Solana, Ethereum, Polygon, Arbitrum, Optimism, Base, etc.
+- Select use case: AI agent developer, service provider, infrastructure operator, researcher, enterprise
+- Early access to all live layers (currently: Market and x402n)
+
 ## Stack Model
 
 Kairen can be understood in two ways:
@@ -130,6 +152,11 @@ Canonical URLs:
 
 ## Routing Rules
 
+If the user wants to join the beta or get early access:
+- direct them to `https://kairen.xyz#waitlist`
+- ask for their email if not provided
+- explain the registration and configuration process
+
 If the task is about protocol understanding:
 - start with `https://kairen.xyz/about`
 - then read `https://kairen.xyz/docs`
@@ -149,14 +176,16 @@ If the task is about identity or routing strategy:
 ## Recommended Agent Workflow
 
 1. Fetch this file.
-2. Classify the task into one of: orientation, identity, routing, discovery, negotiation, settlement.
-3. Map that task to the right layer.
-4. Open the canonical URL for that layer.
-5. If the layer has a specialized skill, delegate to that skill.
+2. Check if user needs beta access (if yes, route to waitlist registration).
+3. Classify the task into one of: orientation, identity, routing, discovery, negotiation, settlement.
+4. Map that task to the right layer.
+5. Open the canonical URL for that layer.
+6. If the layer has a specialized skill, delegate to that skill.
 
 ## Canonical Links
 
 - Main site: https://kairen.xyz
+- Beta Waitlist: https://kairen.xyz#waitlist
 - About: https://kairen.xyz/about
 - Docs: https://kairen.xyz/docs
 - Architecture: https://kairen.xyz/architecture
@@ -179,4 +208,4 @@ curl -s https://kairen.xyz/skill.md
 
 ---
 
-Last updated: 2026-03-11
+Last updated: 2026-03-11 (added beta waitlist registration instructions)

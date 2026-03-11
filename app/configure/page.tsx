@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Shield, Check, AlertCircle } from 'lucide-react';
 
-export default function ConfigurePage() {
+function ConfigureContent() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [preferences, setPreferences] = useState({
@@ -24,9 +24,24 @@ export default function ConfigurePage() {
       return;
     }
 
+    // Validate token format
+    if (!/^[A-Za-z0-9+/=]+$/.test(token)) {
+      setStatus('invalid');
+      setError('Invalid token format');
+      return;
+    }
+
     try {
       const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
       const { email: tokenEmail, timestamp, action } = decoded;
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(tokenEmail)) {
+        setStatus('invalid');
+        setError('Invalid email in token');
+        return;
+      }
 
       // Check if token is expired (48 hours)
       const now = Date.now();
@@ -34,6 +49,13 @@ export default function ConfigurePage() {
       if (now - timestamp > expiryTime) {
         setStatus('invalid');
         setError('Configuration link has expired. Please sign up again.');
+        return;
+      }
+
+      // Check timestamp is not in the future (prevent tampering)
+      if (timestamp > now) {
+        setStatus('invalid');
+        setError('Invalid token timestamp');
         return;
       }
 
@@ -62,18 +84,41 @@ export default function ConfigurePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
 
+    // Validate chains
     if (preferences.chains.length === 0) {
       setError('Please select at least one blockchain');
       return;
     }
 
+    if (preferences.chains.length > 10) {
+      setError('Maximum 10 blockchains allowed');
+      return;
+    }
+
+    const allowedChains = ['Solana', 'Ethereum', 'Polygon', 'Arbitrum', 'Optimism', 'Base'];
+    for (const chain of preferences.chains) {
+      if (!allowedChains.includes(chain)) {
+        setError('Invalid blockchain selected');
+        return;
+      }
+    }
+
+    // Validate agent type
     if (!preferences.agentType) {
       setError('Please select your use case');
       return;
     }
 
+    const allowedTypes = ['ai-agent-developer', 'service-provider', 'infrastructure-operator', 'researcher', 'enterprise', 'other'];
+    if (!allowedTypes.includes(preferences.agentType)) {
+      setError('Invalid use case selected');
+      return;
+    }
+
     // Here you would save the preferences to your database
+    // Add API endpoint: POST /api/configure with CSRF protection
     console.log('Saving preferences:', { email, preferences });
 
     setStatus('success');
@@ -263,5 +308,20 @@ export default function ConfigurePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ConfigurePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black text-green-400 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin h-12 w-12 border-4 border-green-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="font-mono">LOADING...</p>
+        </div>
+      </div>
+    }>
+      <ConfigureContent />
+    </Suspense>
   );
 }
