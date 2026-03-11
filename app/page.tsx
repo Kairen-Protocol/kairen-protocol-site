@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Shield, Terminal, Database, FileText, ChevronRight, Activity, Network } from 'lucide-react';
+import { Shield, Terminal, Database, FileText, Activity, Network } from 'lucide-react';
+import UserTypeToggle from '@/components/UserTypeToggle';
 
 export default function Home() {
   const [currentWord, setCurrentWord] = useState(0);
@@ -58,8 +59,8 @@ export default function Home() {
       <div className="ml-16 relative z-10">
         {/* Top status bar */}
         <div className="border-b border-green-500/30 bg-black/90 backdrop-blur-sm">
-          <div className="flex items-center justify-between px-6 py-2 text-xs font-mono">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-2 text-xs font-mono">
+            <div className="flex flex-wrap items-center gap-4">
               <span className="text-yellow-400">[BETA COMING Q2 2026]</span>
               <span className="text-green-500/50">v0.1.0-alpha</span>
               <span className="flex items-center gap-2">
@@ -67,7 +68,10 @@ export default function Home() {
                 <span className="text-green-500">ONLINE</span>
               </span>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <div className="hidden xl:block">
+                <UserTypeToggle variant="compact" />
+              </div>
               <span className="text-green-500/70">{new Date().toLocaleTimeString()}</span>
               <a href="#waitlist" className="text-yellow-400 hover:text-yellow-300 transition-colors">
                 JOIN WAITLIST →
@@ -103,11 +107,11 @@ export default function Home() {
                   /// PAYMENTS • MARKETPLACE • NETWORK • IDENTITY
                 </p>
 
+                <div className="mb-8">
+                  <UserTypeToggle />
+                </div>
+
                 <div className="flex flex-wrap gap-4 mb-12">
-                  <button className="cyber-btn">
-                    EXPLORE PROTOCOL
-                    <ChevronRight className="inline h-4 w-4 ml-1" />
-                  </button>
                   <Link href="/docs" className="cyber-btn">
                     READ DOCS
                   </Link>
