@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Shield, Terminal, FileText, ChevronRight, Book, Search } from 'lucide-react';
+import { Shield, Terminal, FileText, ChevronRight, Book, Search, Network } from 'lucide-react';
 import ArchitectureDiagram from '@/components/diagrams/ArchitectureDiagram';
 import X402NFlowDiagram from '@/components/diagrams/X402NFlowDiagram';
 import MarketFlowDiagram from '@/components/diagrams/MarketFlowDiagram';
