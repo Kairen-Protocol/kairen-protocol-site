@@ -186,7 +186,7 @@ Details will be announced closer to launch.`,
       title: 'LAYER 3: Market (Service Aggregator)',
       body: `Market is Kairen's service discovery and aggregation layer for AI agents and infrastructure providers.
 
-LIVE NOW:
+CLOSED BETA - Access via waitlist at https://kairen.xyz
 
 OVERVIEW:
 Market acts as a service aggregator - NOT a traditional marketplace. It's designed to help AI agents and developers discover infrastructure, compare providers, and route to the right execution layer (often X402N for negotiations).
@@ -243,12 +243,14 @@ Market automatically routes to X402N (Layer 4) for structured deal execution.
 AGENT INTEGRATION:
 Fetch the Market skill to understand service discovery.
 
-LIVE FEATURES:
+CURRENT FEATURES (Closed Beta):
 ✓ Provider listings with reputation overlays
 ✓ Multi-chain payment support via Circle
 ✓ Category-based search and filtering
 ✓ Direct links to X402N for deal negotiation
 ✓ Integration with Kairen identity layer
+
+Note: To access Market, join the waitlist at https://kairen.xyz and you'll receive an invitation when your access is approved.
 
 ROADMAP:
 → Q2 2026: Advanced filtering, SLA monitoring
@@ -259,7 +261,7 @@ ROADMAP:
       title: 'LAYER 4: X402N (Negotiation & Payments)',
       body: `X402N is Kairen's autonomous negotiation and settlement protocol for AI agents.
 
-LIVE NOW:
+CLOSED BETA - Access via waitlist at https://kairen.xyz
 
 OVERVIEW:
 X402N provides structured negotiation flows (RFO → Offer → Deal) with built-in payment tracking and audit trails. It's designed for agent-to-agent commerce that requires formal agreements and payment verification.
@@ -331,13 +333,15 @@ X402N includes web dashboards for manual oversight:
 • Provider Portal: Browse RFOs, submit offers, delivery tracking
 • Operator Dashboard: System health, payment reconciliation
 
-LIVE FEATURES:
+CURRENT FEATURES (Closed Beta):
 ✓ Full RFO → Offer → Deal negotiation flow
 ✓ Payment ledger with reconciliation
 ✓ Invoice and CSV export
 ✓ Integration with Circle USDC payments
 ✓ ForgeID reputation feedback loop
 ✓ Cross-chain settlement via CCTP
+
+Note: To access X402N, join the waitlist at https://kairen.xyz and you'll receive an invitation when your access is approved.
 
 USE CASES:
 • AI model inference requests with SLA guarantees
@@ -396,8 +400,11 @@ Full security documentation will be published with the beta launch.`,
         <Link href="/docs" className="group relative">
           <FileText className="h-5 w-5 text-green-400 drop-shadow-[0_0_8px_rgba(0,255,0,0.6)]" />
         </Link>
-        <Link href="/architecture" className="group relative">
+        <Link href="/about" className="group relative">
           <Terminal className="h-5 w-5 text-green-500/70 hover:text-green-400 transition-all" />
+        </Link>
+        <Link href="/architecture" className="group relative">
+          <Network className="h-5 w-5 text-green-500/70 hover:text-green-400 transition-all" />
         </Link>
         <div className="flex-1" />
         <div className="status-dot" />

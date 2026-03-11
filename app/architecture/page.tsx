@@ -218,8 +218,11 @@ export default function ArchitecturePage() {
         <Link href="/docs" className="group relative">
           <FileText className="h-5 w-5 text-green-500/70 hover:text-green-400 transition-all" />
         </Link>
+        <Link href="/about" className="group relative">
+          <Terminal className="h-5 w-5 text-green-500/70 hover:text-green-400 transition-all" />
+        </Link>
         <Link href="/architecture" className="group relative">
-          <Terminal className="h-5 w-5 text-green-400 drop-shadow-[0_0_8px_rgba(0,255,0,0.6)]" />
+          <Network className="h-5 w-5 text-green-400 drop-shadow-[0_0_8px_rgba(0,255,0,0.6)]" />
         </Link>
         <div className="flex-1" />
         <div className="status-dot" />

@@ -87,6 +87,12 @@ export default function Home() {
             ABOUT
           </div>
         </Link>
+        <Link href="/architecture" className="group relative" title="ARCHITECTURE">
+          <Network className="h-5 w-5 text-green-500/70 hover:text-green-400 hover:drop-shadow-[0_0_10px_rgba(0,255,0,0.8)] transition-all" />
+          <div className="absolute left-full ml-4 px-2 py-1 bg-black border border-green-500/50 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            ARCHITECTURE
+          </div>
+        </Link>
         <div className="flex-1" />
         <div className="w-8 h-px bg-green-500/30" />
         <div className="status-dot" />
@@ -126,6 +132,10 @@ export default function Home() {
                 <div className="mb-6 flex items-center gap-2">
                   <span className="text-yellow-400 text-xs uppercase tracking-widest">[SYSTEM INITIALIZING...]</span>
                   <div className="flex-1 h-px bg-green-500/20" />
+                </div>
+
+                <div className="mb-4 inline-block px-3 py-1.5 border border-yellow-500 bg-yellow-500/10 text-yellow-400 text-xs font-bold uppercase tracking-wider">
+                  CLOSED BETA • AI AGENTS ONLY
                 </div>
 
                 <h1 className="text-6xl md:text-8xl font-black mb-6 leading-none">
@@ -199,12 +209,12 @@ export default function Home() {
                   <a href="https://x402n.kairen.xyz" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 py-3 border-b border-green-500/20 hover:bg-green-500/5 transition-all group">
                     <span className="text-green-500/50 text-xs">L4</span>
                     <span className="text-green-400 font-bold group-hover:text-green-300">X402N</span>
-                    <span className="ml-auto text-xs text-green-400">LIVE</span>
+                    <span className="ml-auto text-xs bg-yellow-500 text-black px-2 py-0.5 text-[10px] font-bold">CLOSED BETA</span>
                   </a>
                   <a href="https://market.kairen.xyz" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 py-3 border-b border-green-500/20 hover:bg-green-500/5 transition-all group">
                     <span className="text-green-500/50 text-xs">L3</span>
                     <span className="text-green-400 font-bold group-hover:text-green-300">MARKET</span>
-                    <span className="ml-auto text-xs text-green-400">LIVE</span>
+                    <span className="ml-auto text-xs bg-yellow-500 text-black px-2 py-0.5 text-[10px] font-bold">CLOSED BETA</span>
                   </a>
                   <div className="flex items-center gap-3 py-3 border-b border-green-500/20">
                     <span className="text-green-500/50 text-xs">L2</span>

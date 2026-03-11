@@ -23,8 +23,8 @@ const principles = [
 ];
 
 const stack = [
-  { level: 'L4', name: 'x402n', status: 'Live', desc: 'Negotiation, escrow, and payment execution.' },
-  { level: 'L3', name: 'Market', status: 'Live', desc: 'Service aggregation and provider discovery.' },
+  { level: 'L4', name: 'x402n', status: 'Closed Beta', desc: 'Negotiation, escrow, and payment execution.' },
+  { level: 'L3', name: 'Market', status: 'Closed Beta', desc: 'Service aggregation and provider discovery.' },
   { level: 'L2', name: 'AgentNet', status: 'Soon', desc: 'Dedicated routing and authenticated network access.' },
   { level: 'L1', name: 'ForgeID', status: 'Soon', desc: 'Portable identity, behavioral scoring, and access tiers.' },
   { level: 'L0', name: 'EVM + Solana + Circle', status: 'Foundation', desc: 'Cross-chain settlement, USDC rails, and finality.' },
@@ -44,6 +44,9 @@ export default function AboutPage() {
         </Link>
         <Link href="/about" className="group relative" title="ABOUT">
           <Terminal className="h-5 w-5 text-green-400 drop-shadow-[0_0_8px_rgba(0,255,0,0.6)]" />
+        </Link>
+        <Link href="/architecture" className="group relative" title="ARCHITECTURE">
+          <Network className="h-5 w-5 text-green-500/70 hover:text-green-400 transition-all" />
         </Link>
         <div className="flex-1" />
         <div className="status-dot" />
