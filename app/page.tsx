@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Shield, Terminal, Database, FileText, Activity, Network, Check, AlertCircle } from 'lucide-react';
+import { Shield, Terminal, FileText, Activity, Network, Check, AlertCircle, Sun, Moon, MonitorCog } from 'lucide-react';
 import UserTypeToggle from '@/components/UserTypeToggle';
 
 export default function Home() {
@@ -12,6 +12,34 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [themeMode, setThemeMode] = useState<'light' | 'dark' | 'system'>('system');
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark');
+
+  useEffect(() => {
+    const storedTheme = window.localStorage.getItem('kairen_theme_mode');
+    if (storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system') {
+      setThemeMode(storedTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const applyTheme = () => {
+      const resolved = themeMode === 'system' ? (media.matches ? 'dark' : 'light') : themeMode;
+      setResolvedTheme(resolved);
+      document.documentElement.setAttribute('data-theme', resolved);
+    };
+
+    applyTheme();
+    window.localStorage.setItem('kairen_theme_mode', themeMode);
+
+    if (themeMode === 'system') {
+      media.addEventListener('change', applyTheme);
+      return () => media.removeEventListener('change', applyTheme);
+    }
+    return;
+  }, [themeMode]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -54,7 +82,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-green-400 relative overflow-hidden">
+    <div className={`theme-shell ${resolvedTheme === 'light' ? 'theme-light' : 'theme-dark'} min-h-screen bg-black text-green-400 relative overflow-hidden`}>
       {/* Scanlines overlay */}
       <div className="scanlines" />
 
@@ -114,6 +142,20 @@ export default function Home() {
             <div className="flex flex-wrap items-center justify-end gap-3">
               <div className="hidden xl:block">
                 <UserTypeToggle variant="compact" />
+              </div>
+              <div className="theme-mode-switch" role="group" aria-label="Theme mode">
+                <button type="button" className={themeMode === 'light' ? 'active' : ''} onClick={() => setThemeMode('light')} aria-pressed={themeMode === 'light'}>
+                  <Sun className="h-3 w-3" />
+                  Light
+                </button>
+                <button type="button" className={themeMode === 'dark' ? 'active' : ''} onClick={() => setThemeMode('dark')} aria-pressed={themeMode === 'dark'}>
+                  <Moon className="h-3 w-3" />
+                  Dark
+                </button>
+                <button type="button" className={themeMode === 'system' ? 'active' : ''} onClick={() => setThemeMode('system')} aria-pressed={themeMode === 'system'}>
+                  <MonitorCog className="h-3 w-3" />
+                  System
+                </button>
               </div>
               <span className="text-green-500/70">{new Date().toLocaleTimeString()}</span>
               <a href="#waitlist" className="text-yellow-400 hover:text-yellow-300 transition-colors">
@@ -199,19 +241,19 @@ export default function Home() {
               </div>
 
               {/* Right: Protocol Stack */}
-              <div className="cyber-card p-6">
+              <div className="cyber-card protocol-stack-card p-6">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-xs text-green-500 uppercase tracking-wider">Protocol Stack</span>
                   <span className="text-xs text-green-500/50">v1.0</span>
                 </div>
 
                 <div className="space-y-3 font-mono text-sm">
-                  <a href="https://x402n.kairen.xyz" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 py-3 border-b border-green-500/20 hover:bg-green-500/5 transition-all group">
+                  <a href="https://x402n.kairen.xyz" target="_blank" rel="noopener noreferrer" className="protocol-stack-row flex items-center gap-3 py-3 border-b border-green-500/20 hover:bg-green-500/5 transition-all group">
                     <span className="text-green-500/50 text-xs">L4</span>
                     <span className="text-green-400 font-bold group-hover:text-green-300">X402N</span>
                     <span className="ml-auto text-xs bg-yellow-500 text-black px-2 py-0.5 text-[10px] font-bold">CLOSED BETA</span>
                   </a>
-                  <a href="https://market.kairen.xyz" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 py-3 border-b border-green-500/20 hover:bg-green-500/5 transition-all group">
+                  <a href="https://market.kairen.xyz" target="_blank" rel="noopener noreferrer" className="protocol-stack-row flex items-center gap-3 py-3 border-b border-green-500/20 hover:bg-green-500/5 transition-all group">
                     <span className="text-green-500/50 text-xs">L3</span>
                     <span className="text-green-400 font-bold group-hover:text-green-300">MARKET</span>
                     <span className="ml-auto text-xs bg-yellow-500 text-black px-2 py-0.5 text-[10px] font-bold">CLOSED BETA</span>
