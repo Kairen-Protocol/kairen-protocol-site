@@ -7,6 +7,7 @@ import ArchitectureDiagram from '@/components/diagrams/ArchitectureDiagram';
 import X402NFlowDiagram from '@/components/diagrams/X402NFlowDiagram';
 import MarketFlowDiagram from '@/components/diagrams/MarketFlowDiagram';
 import LinkButton from '@/components/LinkButton';
+import X402nFlow from '@/components/X402nFlow';
 
 export default function DocsPage() {
   const [activeSection, setActiveSection] = useState('abstract');
@@ -499,6 +500,17 @@ Full security documentation will be published with the beta launch.`,
                           </LinkButton>
                         </div>
                         <X402NFlowDiagram />
+
+                        {/* Interactive Protocol Flow */}
+                        <div className="my-8">
+                          <h3 className="text-xl font-black text-green-400 mb-4 uppercase">
+                            Interactive Protocol Flow
+                          </h3>
+                          <p className="text-sm text-green-400/70 font-mono mb-6">
+                            Watch the complete x402n workflow in action — from agent registration to payment settlement
+                          </p>
+                          <X402nFlow />
+                        </div>
                       </>
                     )}
                     {activeSection === 'market' && (
