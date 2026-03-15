@@ -8,6 +8,9 @@ import {
   isSuspiciousRequest,
 } from '@/lib/security';
 
+// Configure Edge Runtime for Cloudflare Pages
+export const runtime = 'edge';
+
 // Initialize Resend for email
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
