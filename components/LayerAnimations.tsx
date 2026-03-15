@@ -196,17 +196,78 @@ export default function LayerAnimations() {
           overflow: 'hidden',
           border: '1px solid rgba(255,255,255,0.06)',
           background: '#000',
+          position: 'relative',
         }}>
-          <iframe
-            key={activeLayer}
-            src={LAYERS[activeLayer].file}
-            style={{
-              width: '100%',
-              height: '100%',
-              border: 'none',
-            }}
-            title={LAYERS[activeLayer].name}
-          />
+          {activeLayer === 2 ? (
+            // Coming Soon overlay for AgentNet
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'rgba(0,0,0,0.95)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10,
+            }}>
+              <div style={{
+                background: 'rgba(24,24,27,0.95)',
+                border: '1px solid rgba(74,222,128,0.2)',
+                borderRadius: 12,
+                padding: '32px 48px',
+                textAlign: 'center',
+                boxShadow: '0 0 40px rgba(74,222,128,0.12)',
+              }}>
+                <div style={{
+                  fontSize: 32,
+                  fontWeight: 700,
+                  color: '#4ade80',
+                  marginBottom: 12,
+                  letterSpacing: '-0.01em',
+                }}>
+                  <span style={{
+                    width: 12,
+                    height: 12,
+                    background: '#4ade80',
+                    borderRadius: '50%',
+                    display: 'inline-block',
+                    marginRight: 8,
+                    animation: 'pulse 2s ease-in-out infinite',
+                  }} />
+                  Coming Soon
+                </div>
+                <div style={{
+                  fontSize: 14,
+                  color: '#71717a',
+                  fontFamily: '"JetBrains Mono", monospace',
+                  fontWeight: 300,
+                  lineHeight: 1.6,
+                }}>
+                  AgentNet infrastructure details will be revealed closer to launch
+                  <br />
+                  Q2 2026 · Network routing layer for AI agents
+                </div>
+              </div>
+            </div>
+          ) : (
+            <iframe
+              key={activeLayer}
+              src={LAYERS[activeLayer].file}
+              style={{
+                width: '100%',
+                height: '100%',
+                border: 'none',
+              }}
+              title={LAYERS[activeLayer].name}
+              sandbox="allow-scripts allow-same-origin"
+            />
+          )}
+          <style>{`
+            @keyframes pulse {
+              0%, 100% { opacity: 1; transform: scale(1); }
+              50% { opacity: 0.4; transform: scale(0.8); }
+            }
+          `}</style>
         </div>
 
         {/* Layer indicator */}

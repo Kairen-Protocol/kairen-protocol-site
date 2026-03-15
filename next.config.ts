@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Allow animations to be loaded in iframes from same origin
+        source: '/animations/:path*',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+        ],
+      },
+      {
         source: '/:path*',
         headers: [
           {
@@ -16,7 +26,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'X-Frame-Options',
-            value: 'DENY',
+            value: 'SAMEORIGIN',
           },
           {
             key: 'X-XSS-Protection',
