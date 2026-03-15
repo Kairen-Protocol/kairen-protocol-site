@@ -33,6 +33,12 @@ export default function Navigation() {
         <Link href="/about" className="hover:text-[var(--forge-ink)] transition-colors">
           About
         </Link>
+        <Link href="https://x402n.kairen.xyz" target="_blank" className="hover:text-[var(--forge-ink)] transition-colors">
+          X402N
+        </Link>
+        <Link href="https://market.kairen.xyz" target="_blank" className="hover:text-[var(--forge-ink)] transition-colors">
+          Marketplace
+        </Link>
         <Link href="/docs" className="hover:text-[var(--forge-ink)] transition-colors">
           Docs
         </Link>
