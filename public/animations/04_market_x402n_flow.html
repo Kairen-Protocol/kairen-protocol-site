@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<parameter name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market + X402N — Discovery & Payments</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#e4e4e7;font-family:'Inter',sans-serif;overflow:hidden;height:100vh;width:100vw}
+.canvas{position:relative;width:100vw;height:100vh}
+.header{position:absolute;top:32px;left:40px;z-index:10}
+.header h1{font-size:12px;font-family:'JetBrains Mono',monospace;color:#fb923c;font-weight:400;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px}
+.header h2{font-size:24px;font-weight:600;color:#fafafa;letter-spacing:-0.02em}
+.header p{font-size:12px;color:#71717a;margin-top:6px;font-family:'JetBrains Mono',monospace;font-weight:300}
+.step-bar{position:absolute;bottom:32px;left:0;right:0;text-align:center;z-index:10;padding:0 40px}
+.step-bar span{font-size:13px;color:#a1a1aa;font-family:'JetBrains Mono',monospace;opacity:0;transition:opacity .5s;line-height:1.6;font-weight:300}
+.step-bar span.active{opacity:1}
+.scene{position:absolute;inset:100px 24px 80px}
+
+/* Consumer Agent */
+.consumer{position:absolute;left:36px;top:48px;width:128px;opacity:0;transition:all .7s}
+.consumer.visible{opacity:1}
+.c-card{background:rgba(24,24,27,.7);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:13px;text-align:center}
+.c-card.active{border-color:rgba(59,130,246,.25);box-shadow:0 0 16px rgba(59,130,246,.08)}
+.c-avatar{font-size:24px;margin-bottom:6px}
+.c-name{font-size:12px;font-weight:500;color:#a1a1aa}
+.c-tier{font-size:9px;font-family:'JetBrains Mono',monospace;color:#a78bfa;background:rgba(139,92,246,.1);padding:2px 6px;border-radius:3px;display:inline-block;margin-top:4px;border:1px solid rgba(139,92,246,.2);font-weight:400}
+.c-label{font-size:10px;color:#52525b;font-family:'JetBrains Mono',monospace;margin-top:4px;font-weight:300}
+
+/* Provider Agent */
+.provider{position:absolute;right:36px;top:48px;width:128px;opacity:0;transition:all .7s}
+.provider.visible{opacity:1}
+.p-card{background:rgba(24,24,27,.7);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:13px;text-align:center}
+.p-card.active{border-color:rgba(34,197,94,.25);box-shadow:0 0 16px rgba(34,197,94,.08)}
+.p-avatar{font-size:24px;margin-bottom:6px}
+.p-name{font-size:12px;font-weight:500;color:#a1a1aa}
+.p-tier{font-size:9px;font-family:'JetBrains Mono',monospace;color:#fb923c;background:rgba(251,146,60,.1);padding:2px 6px;border-radius:3px;display:inline-block;margin-top:4px;border:1px solid rgba(251,146,60,.2);font-weight:400}
+.p-label{font-size:10px;color:#52525b;font-family:'JetBrains Mono',monospace;margin-top:4px;font-weight:300}
+
+/* Center marketplace area */
+.market{position:absolute;left:50%;top:36px;transform:translateX(-50%);width:400px;opacity:0;transition:all .7s}
+.market.visible{opacity:1}
+.market-header{text-align:center;margin-bottom:11px}
+.market-title{font-size:11px;font-family:'JetBrains Mono',monospace;color:#fb923c;letter-spacing:0.06em;text-transform:uppercase;font-weight:400}
+
+/* Service listings */
+.services{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+.svc{background:rgba(24,24,27,.6);border:1px solid rgba(255,255,255,.05);border-radius:8px;padding:7px 11px;font-size:10px;font-family:'JetBrains Mono',monospace;color:#71717a;transition:all .5s;width:120px;text-align:center;font-weight:300}
+.svc.matched{border-color:rgba(251,146,60,.3);color:#fb923c;box-shadow:0 0 10px rgba(251,146,60,.08)}
+.svc-name{font-weight:500;color:#a1a1aa;margin-bottom:2px;font-size:10px}
+.svc-price{color:#4ade80;font-size:9px;font-weight:400}
+.svc-score{color:#52525b;font-size:8px;margin-top:2px}
+
+/* Deal flow area */
+.deal-flow{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);width:660px;opacity:0;transition:all .7s}
+.deal-flow.visible{opacity:1}
+.flow-title{text-align:center;font-size:10px;font-family:'JetBrains Mono',monospace;color:#52525b;margin-bottom:11px;font-weight:300}
+
+/* State machine */
+.states{display:flex;align-items:center;justify-content:center;gap:5px}
+.state{padding:7px 12px;border-radius:8px;font-size:10px;font-weight:500;font-family:'JetBrains Mono',monospace;background:rgba(24,24,27,.6);border:1px solid rgba(255,255,255,.05);color:#52525b;transition:all .5s;text-align:center;min-width:70px}
+.state.active{color:#fafafa}
+.state.rfo{border-color:rgba(59,130,246,.25);color:#60a5fa;background:rgba(59,130,246,.08);box-shadow:0 0 12px rgba(59,130,246,.06)}
+.state.offer{border-color:rgba(139,92,246,.25);color:#a78bfa;background:rgba(139,92,246,.08);box-shadow:0 0 12px rgba(139,92,246,.06)}
+.state.accept{border-color:rgba(34,197,94,.25);color:#4ade80;background:rgba(34,197,94,.08);box-shadow:0 0 12px rgba(34,197,94,.06)}
+.state.escrow{border-color:rgba(251,146,60,.25);color:#fb923c;background:rgba(251,146,60,.08);box-shadow:0 0 12px rgba(251,146,60,.06)}
+.state.execute{border-color:rgba(236,72,153,.25);color:#ec4899;background:rgba(236,72,153,.08);box-shadow:0 0 12px rgba(236,72,153,.06)}
+.state.settle{border-color:rgba(34,197,94,.25);color:#4ade80;background:rgba(34,197,94,.08);box-shadow:0 0 12px rgba(34,197,94,.08)}
+.state-arrow{font-size:13px;color:#27272a;transition:color .5s}
+.state-arrow.lit{color:#4ade80}
+
+/* Escrow detail */
+.escrow-detail{position:absolute;left:50%;transform:translateX(-50%);bottom:112px;width:320px;background:rgba(24,24,27,.7);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:13px;opacity:0;transition:all .7s;text-align:center}
+.escrow-detail.visible{opacity:1}
+.escrow-detail.locked{border-color:rgba(251,146,60,.25);box-shadow:0 0 16px rgba(251,146,60,.08)}
+.escrow-detail.released{border-color:rgba(34,197,94,.25);box-shadow:0 0 16px rgba(34,197,94,.08)}
+.ed-title{font-size:9px;font-family:'JetBrains Mono',monospace;color:#52525b;margin-bottom:8px;font-weight:300}
+.ed-amount{font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;color:#fb923c;transition:color .5s}
+.ed-amount.green{color:#4ade80}
+.ed-status{font-size:10px;font-family:'JetBrains Mono',monospace;margin-top:6px;color:#71717a;font-weight:300}
+.ed-chain{font-size:9px;color:#52525b;margin-top:4px;font-family:'JetBrains Mono',monospace;font-weight:300}
+
+/* Connection arrows */
+.conn{position:absolute;opacity:0;transition:opacity .5s}
+.conn.visible{opacity:1}
+.conn-left{left:166px;top:80px;width:64px;height:1px;background:linear-gradient(90deg,rgba(59,130,246,.4),transparent)}
+.conn-right{right:166px;top:80px;width:64px;height:1px;background:linear-gradient(270deg,rgba(34,197,94,.4),transparent)}
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="header">
+    <h1>Layers 3 + 4</h1>
+    <h2>Market + X402N</h2>
+    <p>service discovery, negotiation, and USDC payments</p>
+  </div>
+
+  <div class="scene">
+    <div class="consumer" id="consumer">
+      <div class="c-card" id="cCard">
+        <div class="c-avatar">🤖</div>
+        <div class="c-name">Consumer</div>
+        <div class="c-tier">Senior 780</div>
+        <div class="c-label">needs inference</div>
+      </div>
+    </div>
+
+    <div class="conn conn-left" id="connL"></div>
+    <div class="conn conn-right" id="connR"></div>
+
+    <div class="market" id="market">
+      <div class="market-header"><span class="market-title">Kairen Market · Service Registry</span></div>
+      <div class="services">
+        <div class="svc" id="s1"><div class="svc-name">GPU Inference</div><div class="svc-price">$0.004/call</div><div class="svc-score">Score: 880</div></div>
+        <div class="svc" id="s2"><div class="svc-name">LLM API</div><div class="svc-price">$0.008/call</div><div class="svc-score">Score: 720</div></div>
+        <div class="svc" id="s3"><div class="svc-name">Data Feed</div><div class="svc-price">$0.001/req</div><div class="svc-score">Score: 850</div></div>
+      </div>
+    </div>
+
+    <div class="provider" id="provider">
+      <div class="p-card" id="pCard">
+        <div class="p-avatar">🧠</div>
+        <div class="p-name">Provider</div>
+        <div class="p-tier">Elite 880</div>
+        <div class="p-label">GPU service</div>
+      </div>
+    </div>
+
+    <div class="escrow-detail" id="escrow">
+      <div class="ed-title">Circle USDC Escrow</div>
+      <div class="ed-amount" id="edAmount">$2.00</div>
+      <div class="ed-status" id="edStatus">—</div>
+      <div class="ed-chain" id="edChain">cross-chain via Circle Gateway · 15+ chains · &lt;500ms</div>
+    </div>
+
+    <div class="deal-flow" id="dealFlow">
+      <div class="flow-title">X402N Negotiation + Payment Flow</div>
+      <div class="states">
+        <div class="state" id="st1">RFO</div>
+        <span class="state-arrow" id="sa1">→</span>
+        <div class="state" id="st2">Offer</div>
+        <span class="state-arrow" id="sa2">→</span>
+        <div class="state" id="st3">Accept</div>
+        <span class="state-arrow" id="sa3">→</span>
+        <div class="state" id="st4">Escrow</div>
+        <span class="state-arrow" id="sa4">→</span>
+        <div class="state" id="st5">Execute</div>
+        <span class="state-arrow" id="sa5">→</span>
+        <div class="state" id="st6">Settle</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-bar"><span id="stepText"></span></div>
+</div>
+
+<script>
+const stepText = document.getElementById('stepText');
+
+const steps = [
+  { text: 'Consumer agent needs GPU inference — searches Kairen Market by service type, price, and minimum reputation score', fn: () => {
+    document.getElementById('consumer').classList.add('visible');
+    document.getElementById('market').classList.add('visible');
+    document.getElementById('connL').classList.add('visible');
+  }},
+  { text: 'Market returns providers ranked by Kairen Score — GPU Inference (Score: 880) matched and selected', fn: () => {
+    document.getElementById('s1').classList.add('matched');
+    document.getElementById('provider').classList.add('visible');
+    document.getElementById('connR').classList.add('visible');
+  }},
+  { text: 'Step 1 — Consumer posts RFO via X402N: price cap $0.005, volume 500 calls, SLA 95%, min score 700', fn: () => {
+    document.getElementById('dealFlow').classList.add('visible');
+    document.getElementById('st1').classList.add('rfo');
+    document.getElementById('sa1').classList.add('lit');
+    document.getElementById('cCard').classList.add('active');
+  }},
+  { text: 'Step 2 — Provider auto-responds with competitive Offer: $0.004/call, 98% SLA, streaming delivery', fn: () => {
+    document.getElementById('st2').classList.add('offer');
+    document.getElementById('sa2').classList.add('lit');
+    document.getElementById('pCard').classList.add('active');
+  }},
+  { text: 'Step 3 — Consumer auto-accepts: price ≤ cap ✓ score ≥ 700 ✓ SLA ≥ 95% ✓ — deal confirmed', fn: () => {
+    document.getElementById('st3').classList.add('accept');
+    document.getElementById('sa3').classList.add('lit');
+  }},
+  { text: 'Step 4 — Circle Gateway locks $2.00 USDC in escrow (&lt;500ms settlement time). Cross-chain compatible.', fn: () => {
+    document.getElementById('st4').classList.add('escrow');
+    document.getElementById('sa4').classList.add('lit');
+    document.getElementById('escrow').classList.add('visible','locked');
+    document.getElementById('edStatus').textContent = '🔒 Locked · 500 × $0.004';
+  }},
+  { text: 'Step 5 — Provider executes: 492/500 successful calls delivered (98.4% success rate, exceeding SLA)', fn: () => {
+    document.getElementById('st5').classList.add('execute');
+    document.getElementById('sa5').classList.add('lit');
+    document.getElementById('edStatus').textContent = '⚡ Executing · 492/500 delivered';
+  }},
+  { text: 'Step 6 — Settlement: $1.968 → provider, $0.032 refunded to consumer (8 failed calls). Automatic reputation update.', fn: () => {
+    document.getElementById('st6').classList.add('settle');
+    const el = document.getElementById('escrow');
+    el.classList.remove('locked');
+    el.classList.add('released');
+    document.getElementById('edAmount').textContent = '$1.968 → Provider';
+    document.getElementById('edAmount').classList.add('green');
+    document.getElementById('edStatus').textContent = '✓ Released · $0.032 refunded';
+  }},
+  { text: 'Zero human intervention — discovery → negotiation → payment → attestation. Fully autonomous agent commerce.', fn: () => {
+    document.getElementById('edChain').textContent = 'attestations → ForgeID oracle → reputation scores updated ↺';
+  }},
+];
+
+let currentStep = 0;
+function resetAll() {
+  ['consumer','provider','market','dealFlow','connL','connR'].forEach(id => {
+    document.getElementById(id).classList.remove('visible');
+  });
+  ['s1','s2','s3'].forEach(id => document.getElementById(id).classList.remove('matched'));
+  ['cCard','pCard'].forEach(id => document.getElementById(id).classList.remove('active'));
+  for(let i=1;i<=6;i++){
+    document.getElementById('st'+i).className='state';
+  }
+  for(let i=1;i<=5;i++){
+    document.getElementById('sa'+i).classList.remove('lit');
+  }
+  const esc = document.getElementById('escrow');
+  esc.className='escrow-detail';
+  document.getElementById('edAmount').textContent='$2.00';
+  document.getElementById('edAmount').classList.remove('green');
+  document.getElementById('edStatus').textContent='—';
+  document.getElementById('edChain').textContent='cross-chain via Circle Gateway · 15+ chains · <500ms';
+}
+
+function runStep() {
+  const step = steps[currentStep];
+  stepText.classList.remove('active');
+  setTimeout(() => {
+    stepText.textContent = step.text;
+    stepText.classList.add('active');
+  }, 150);
+  step.fn();
+  currentStep++;
+  if (currentStep >= steps.length) {
+    setTimeout(() => { resetAll(); currentStep = 0; setTimeout(runStep, 900); }, 3400);
+  } else {
+    setTimeout(runStep, 3200);
+  }
+}
+setTimeout(runStep, 1200);
+</script>
+</body>
+</html>

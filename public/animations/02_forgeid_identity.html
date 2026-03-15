@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForgeID — Identity & Reputation Layer</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#e4e4e7;font-family:'Inter',sans-serif;overflow:hidden;height:100vh;width:100vw}
+.canvas{position:relative;width:100vw;height:100vh}
+.header{position:absolute;top:32px;left:40px;z-index:10}
+.header h1{font-size:12px;font-family:'JetBrains Mono',monospace;color:#a78bfa;font-weight:400;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px}
+.header h2{font-size:24px;font-weight:600;color:#fafafa;letter-spacing:-0.02em}
+.header p{font-size:12px;color:#71717a;margin-top:6px;font-family:'JetBrains Mono',monospace;font-weight:300}
+.step-bar{position:absolute;bottom:32px;left:0;right:0;text-align:center;z-index:10;padding:0 40px}
+.step-bar span{font-size:13px;color:#a1a1aa;font-family:'JetBrains Mono',monospace;opacity:0;transition:opacity .5s;line-height:1.6;font-weight:300}
+.step-bar span.active{opacity:1}
+.scene{position:absolute;inset:100px 40px 80px;display:flex;align-items:center;justify-content:center}
+
+/* Agent */
+.agent{position:absolute;left:80px;top:50%;transform:translateY(-50%);width:100px;text-align:center;opacity:0;transition:all .7s}
+.agent.visible{opacity:1}
+.agent-avatar{width:56px;height:56px;border-radius:10px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:24px;transition:all .5s}
+.agent.upgraded .agent-avatar{border-color:#a78bfa;box-shadow:0 0 16px rgba(139,92,246,.15)}
+.agent-label{font-size:11px;font-family:'JetBrains Mono',monospace;color:#52525b;font-weight:300}
+.agent-name{font-size:13px;font-weight:500;color:#a1a1aa;margin-top:2px}
+
+/* Forge Pass Card */
+.forge-pass{position:absolute;left:240px;top:50%;transform:translateY(-50%);width:260px;background:rgba(24,24,27,.8);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:18px;opacity:0;transition:all .7s}
+.forge-pass.visible{opacity:1}
+.forge-pass.glow{border-color:rgba(167,139,250,.3);box-shadow:0 0 20px rgba(139,92,246,.08)}
+.fp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.fp-title{font-size:10px;font-family:'JetBrains Mono',monospace;color:#a78bfa;letter-spacing:0.06em;text-transform:uppercase;font-weight:400}
+.fp-nft{font-size:9px;background:rgba(139,92,246,.1);color:#a78bfa;padding:2px 7px;border-radius:3px;font-family:'JetBrains Mono',monospace;border:1px solid rgba(139,92,246,.2)}
+.fp-score-container{text-align:center;margin:14px 0}
+.fp-score-ring{width:80px;height:80px;border-radius:50%;border:2px solid rgba(255,255,255,.06);margin:0 auto;display:flex;align-items:center;justify-content:center;flex-direction:column;position:relative;transition:border-color .5s}
+.fp-score-num{font-size:26px;font-weight:700;color:#a78bfa;transition:color .5s;font-family:'JetBrains Mono',monospace}
+.fp-score-label{font-size:9px;color:#52525b;font-family:'JetBrains Mono',monospace;font-weight:300;text-transform:uppercase;letter-spacing:0.04em}
+.fp-tier{text-align:center;font-size:11px;font-weight:500;padding:5px 14px;border-radius:6px;margin:10px auto 0;width:fit-content;transition:all .5s}
+.tier-associate{background:rgba(34,197,94,.08);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+.tier-member{background:rgba(59,130,246,.08);color:#60a5fa;border:1px solid rgba(59,130,246,.2)}
+.tier-senior{background:rgba(139,92,246,.08);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
+.tier-elite{background:rgba(251,146,60,.08);color:#fb923c;border:1px solid rgba(251,146,60,.2)}
+.fp-fields{margin-top:14px;display:flex;flex-direction:column;gap:5px}
+.fp-field{display:flex;justify-content:space-between;font-size:10px;font-family:'JetBrains Mono',monospace}
+.fp-field-key{color:#52525b;font-weight:300}
+.fp-field-val{color:#a1a1aa;font-weight:400}
+
+/* Partners Column */
+.partners{position:absolute;right:80px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;opacity:0;transition:all .7s}
+.partners.visible{opacity:1}
+.partner{width:160px;background:rgba(24,24,27,.6);border:1px solid rgba(255,255,255,.05);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:9px;transition:all .5s}
+.partner.attesting{border-color:rgba(34,197,94,.25);box-shadow:0 0 12px rgba(34,197,94,.08)}
+.partner-icon{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-size:14px}
+.partner-info{flex:1}
+.partner-name{font-size:11px;font-weight:500;color:#a1a1aa}
+.partner-type{font-size:9px;color:#52525b;font-family:'JetBrains Mono',monospace;font-weight:300}
+
+/* Arrows */
+.arrow{position:absolute;opacity:0;transition:opacity .5s}
+.arrow.visible{opacity:1}
+.arrow-mint{left:180px;top:calc(50% - 2px);width:58px;height:3px}
+.arrow-attest{left:502px;top:calc(50% - 2px);width:74px;height:3px}
+.arrow-line{height:1px;background:linear-gradient(90deg,transparent,rgba(167,139,250,.4));position:absolute;top:1px;left:0;right:8px}
+.arrow-attest .arrow-line{background:linear-gradient(270deg,transparent,rgba(74,222,128,.4))}
+.arrow-head{position:absolute;right:0;top:-2px;width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:6px solid #a78bfa}
+.arrow-attest .arrow-head{left:0;right:auto;border-left:none;border-right:6px solid #4ade80}
+.arrow-label{position:absolute;top:-14px;font-size:9px;font-family:'JetBrains Mono',monospace;white-space:nowrap;font-weight:300}
+.arrow-mint .arrow-label{color:#a78bfa;right:0}
+.arrow-attest .arrow-label{color:#4ade80;left:0}
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="header">
+    <h1>Layer 1</h1>
+    <h2>ForgeID — Identity & Reputation</h2>
+    <p>verifiable on-chain identity for every AI agent</p>
+  </div>
+
+  <div class="scene">
+    <div class="agent" id="agent">
+      <div class="agent-avatar" id="agentAvatar">🤖</div>
+      <div class="agent-label">AI Agent</div>
+      <div class="agent-name" id="agentName">Agent #7f3</div>
+    </div>
+
+    <div class="arrow arrow-mint" id="arrowMint">
+      <div class="arrow-line"></div>
+      <div class="arrow-head"></div>
+      <div class="arrow-label" id="arrowMintLabel">mint pass</div>
+    </div>
+
+    <div class="forge-pass" id="forgePass">
+      <div class="fp-header">
+        <span class="fp-title">Forge Pass</span>
+        <span class="fp-nft">Dynamic NFT</span>
+      </div>
+      <div class="fp-score-container">
+        <div class="fp-score-ring" id="scoreRing">
+          <div class="fp-score-num" id="scoreNum">500</div>
+          <div class="fp-score-label">Score</div>
+        </div>
+      </div>
+      <div class="fp-tier tier-associate" id="tierBadge">Associate</div>
+      <div class="fp-fields">
+        <div class="fp-field"><span class="fp-field-key">wallet</span><span class="fp-field-val" id="fpWallet">—</span></div>
+        <div class="fp-field"><span class="fp-field-key">operator</span><span class="fp-field-val" id="fpOp">—</span></div>
+        <div class="fp-field"><span class="fp-field-key">attestations</span><span class="fp-field-val" id="fpAttest">0</span></div>
+        <div class="fp-field"><span class="fp-field-key">status</span><span class="fp-field-val" id="fpSub">trial</span></div>
+      </div>
+    </div>
+
+    <div class="arrow arrow-attest" id="arrowAttest">
+      <div class="arrow-line"></div>
+      <div class="arrow-head"></div>
+      <div class="arrow-label" id="arrowAttestLabel">attestation</div>
+    </div>
+
+    <div class="partners" id="partners">
+      <div class="partner" id="p1"><div class="partner-icon">🌐</div><div class="partner-info"><div class="partner-name">RPC Provider</div><div class="partner-type">infrastructure</div></div></div>
+      <div class="partner" id="p2"><div class="partner-icon">🔄</div><div class="partner-info"><div class="partner-name">DEX Protocol</div><div class="partner-type">defi service</div></div></div>
+      <div class="partner" id="p3"><div class="partner-icon">📊</div><div class="partner-info"><div class="partner-name">Data Feed</div><div class="partner-type">oracle</div></div></div>
+      <div class="partner" id="p4"><div class="partner-icon">🧠</div><div class="partner-info"><div class="partner-name">AI Service</div><div class="partner-type">inference</div></div></div>
+    </div>
+  </div>
+
+  <div class="step-bar"><span id="stepText"></span></div>
+</div>
+
+<script>
+const scoreNum = document.getElementById('scoreNum');
+const tierBadge = document.getElementById('tierBadge');
+const stepText = document.getElementById('stepText');
+
+const steps = [
+  { text: 'An AI agent starts with just a cryptographic keypair — no reputation, no history', fn: () => {
+    document.getElementById('agent').classList.add('visible');
+  }},
+  { text: 'The agent mints a Forge Pass (dynamic NFT on EVM + Solana). Score starts at 500.', fn: () => {
+    document.getElementById('arrowMint').classList.add('visible');
+    document.getElementById('forgePass').classList.add('visible');
+    document.getElementById('fpWallet').textContent = '7xK3...mPqR';
+    document.getElementById('fpOp').textContent = '9aB2...kLnT';
+    tierBadge.className = 'fp-tier tier-associate';
+    tierBadge.textContent = 'Associate';
+    scoreNum.textContent = '500';
+  }},
+  { text: 'Agent uses partner platforms: RPC providers, DEXs, data feeds, AI inference services...', fn: () => {
+    document.getElementById('partners').classList.add('visible');
+    document.getElementById('arrowMintLabel').textContent = 'uses services';
+  }},
+  { text: 'Partners submit attestations: behavioral signals about the agent's performance and reliability', fn: () => {
+    document.getElementById('arrowAttest').classList.add('visible');
+    ['p1','p2','p3'].forEach((id,i) => {
+      setTimeout(() => document.getElementById(id).classList.add('attesting'), i*380);
+    });
+  }},
+  { text: 'Forge Score updates: 500 → 650. Tier upgrades to Member — better infrastructure access unlocked', fn: () => {
+    animateScore(500, 650);
+    setTimeout(() => {
+      tierBadge.className = 'fp-tier tier-member';
+      tierBadge.textContent = 'Member';
+      document.getElementById('fpAttest').textContent = '47';
+      document.getElementById('fpSub').textContent = 'active';
+    }, 1100);
+  }},
+  { text: 'Continued good behavior → Score 780 → Senior tier. Premium AgentNet routing activated', fn: () => {
+    animateScore(650, 780);
+    setTimeout(() => {
+      tierBadge.className = 'fp-tier tier-senior';
+      tierBadge.textContent = 'Senior';
+      document.getElementById('fpAttest').textContent = '247';
+      document.getElementById('forgePass').classList.add('glow');
+      document.getElementById('agent').classList.add('upgraded');
+    }, 1100);
+    document.getElementById('p4').classList.add('attesting');
+  }},
+  { text: 'Elite agents (850+) earn lowest fees, best routing, governance rights, and maximum visibility', fn: () => {
+    animateScore(780, 910);
+    setTimeout(() => {
+      tierBadge.className = 'fp-tier tier-elite';
+      tierBadge.textContent = 'Elite';
+      document.getElementById('fpAttest').textContent = '1,247';
+      scoreNum.style.color = '#fb923c';
+    }, 1100);
+  }},
+  { text: 'The reputation flywheel: good behavior → higher score → better access → more deals ↺', fn: () => {
+    document.getElementById('arrowAttestLabel').textContent = 'feedback loop ↺';
+    document.getElementById('arrowMintLabel').textContent = 'reputation grows';
+  }},
+];
+
+let currentStep = 0;
+function animateScore(from, to) {
+  let current = from;
+  const step = (to - from) / 28;
+  const interval = setInterval(() => {
+    current += step;
+    if ((step > 0 && current >= to) || (step < 0 && current <= to)) {
+      current = to;
+      clearInterval(interval);
+    }
+    scoreNum.textContent = Math.round(current);
+  }, 38);
+}
+
+function resetAll() {
+  ['agent','arrowMint','forgePass','partners','arrowAttest'].forEach(id => {
+    document.getElementById(id).classList.remove('visible','glow','upgraded');
+  });
+  ['p1','p2','p3','p4'].forEach(id => document.getElementById(id).classList.remove('attesting'));
+  scoreNum.textContent = '—';
+  scoreNum.style.color = '#a78bfa';
+  tierBadge.className = 'fp-tier';
+  tierBadge.textContent = '—';
+  document.getElementById('fpWallet').textContent = '—';
+  document.getElementById('fpOp').textContent = '—';
+  document.getElementById('fpAttest').textContent = '0';
+  document.getElementById('fpSub').textContent = '—';
+  document.getElementById('arrowMintLabel').textContent = 'mint pass';
+  document.getElementById('arrowAttestLabel').textContent = 'attestation';
+  document.getElementById('forgePass').classList.remove('glow');
+  document.getElementById('agent').classList.remove('upgraded');
+}
+
+function runStep() {
+  const step = steps[currentStep];
+  stepText.classList.remove('active');
+  setTimeout(() => {
+    stepText.textContent = step.text;
+    stepText.classList.add('active');
+  }, 150);
+  step.fn();
+  currentStep++;
+  if (currentStep >= steps.length) {
+    setTimeout(() => { resetAll(); currentStep = 0; setTimeout(runStep, 900); }, 3600);
+  } else {
+    setTimeout(runStep, 3000);
+  }
+}
+setTimeout(runStep, 1200);
+</script>
+</body>
+</html>

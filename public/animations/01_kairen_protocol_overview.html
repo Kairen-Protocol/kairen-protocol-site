@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairen Protocol — Architecture Overview</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#e4e4e7;font-family:'Inter',sans-serif;overflow:hidden;height:100vh;width:100vw}
+.canvas{position:relative;width:100vw;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.title-bar{position:absolute;top:40px;left:0;right:0;text-align:center;z-index:10}
+.title-bar h1{font-size:22px;font-weight:600;letter-spacing:-0.02em;color:#fafafa;margin-bottom:8px}
+.title-bar p{font-size:12px;color:#71717a;font-family:'JetBrains Mono',monospace;font-weight:300}
+.step-indicator{position:absolute;bottom:40px;left:0;right:0;text-align:center;z-index:10;padding:0 32px}
+.step-text{font-size:13px;font-weight:300;color:#a1a1aa;font-family:'JetBrains Mono',monospace;opacity:0;transition:opacity .5s;max-width:900px;margin:0 auto;line-height:1.7}
+.step-text.active{opacity:1}
+.layers-container{position:relative;width:800px;height:460px}
+.layer{position:absolute;left:50%;transform:translateX(-50%);width:680px;height:82px;border-radius:8px;display:flex;align-items:center;padding:0 20px;opacity:0;transition:all .6s cubic-bezier(.4,0,.2,1);background:rgba(24,24,27,.6);border:1px solid rgba(255,255,255,.05)}
+.layer.visible{opacity:1}
+.layer.highlight{transform:translateX(-50%) scale(1.008);box-shadow:0 0 0 1px rgba(255,255,255,.08),0 4px 16px rgba(0,0,0,.3)}
+.l0{top:354px;border-color:rgba(99,102,241,.12)}
+.l1{top:258px;border-color:rgba(139,92,246,.12)}
+.l2{top:162px;border-color:rgba(34,197,94,.12)}
+.l3{top:66px;border-color:rgba(251,146,60,.12)}
+.layer-tag{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:400;padding:4px 8px;border-radius:4px;margin-right:12px;text-transform:uppercase;letter-spacing:0.03em;background:rgba(255,255,255,.04);color:#a1a1aa;border:1px solid rgba(255,255,255,.06)}
+.layer-name{font-size:15px;font-weight:600;margin-right:16px;min-width:120px;letter-spacing:-0.01em}
+.l0 .layer-name{color:#818cf8}
+.l1 .layer-name{color:#a78bfa}
+.l2 .layer-name{color:#4ade80}
+.l3 .layer-name{color:#fb923c}
+.layer-desc{font-size:12px;color:#71717a;flex:1;font-weight:300}
+.layer-icons{display:flex;gap:6px}
+.layer-icon{width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)}
+.connector{position:absolute;left:50%;width:1px;background:rgba(255,255,255,.04);opacity:0;transition:opacity .4s;z-index:1}
+.connector.visible{opacity:1}
+.c01{top:148px;height:14px;transform:translateX(-50%)}
+.c12{top:244px;height:14px;transform:translateX(-50%)}
+.c23{top:340px;height:14px;transform:translateX(-50%)}
+.flywheel{position:absolute;right:80px;top:50%;transform:translateY(-50%);width:100px;height:100px;opacity:0;transition:opacity .7s}
+.flywheel.visible{opacity:1}
+.flywheel-ring{position:absolute;inset:0;border:1px dashed rgba(255,255,255,.06);border-radius:50%;animation:spin 14s linear infinite}
+.flywheel-label{position:absolute;font-size:9px;font-family:'JetBrains Mono',monospace;color:#52525b;font-weight:300}
+.flywheel-label.top{top:-14px;left:50%;transform:translateX(-50%);color:#4ade80}
+.flywheel-label.right{right:-48px;top:50%;transform:translateY(-50%);color:#818cf8}
+.flywheel-label.bottom{bottom:-14px;left:50%;transform:translateX(-50%);color:#fb923c}
+.flywheel-label.left{left:-44px;top:50%;transform:translateY(-50%);color:#a78bfa}
+.flywheel-center{position:absolute;inset:26px;background:radial-gradient(circle,rgba(24,24,27,.9),transparent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:500;color:#71717a;font-family:'JetBrains Mono',monospace;text-align:center;line-height:1.3;text-transform:uppercase;letter-spacing:0.04em}
+@keyframes spin{to{transform:rotate(360deg)}}
+.flow-particle{position:absolute;width:5px;height:5px;border-radius:50%;opacity:0;z-index:5;box-shadow:0 0 6px currentColor}
+.flow-particle.up{animation:flowUp 1.6s ease-in-out forwards}
+.flow-particle.down{animation:flowDown 1.6s ease-in-out forwards}
+@keyframes flowUp{0%{opacity:0;transform:translateY(0)}15%{opacity:1}85%{opacity:1}100%{opacity:0;transform:translateY(-100px)}}
+@keyframes flowDown{0%{opacity:0;transform:translateY(0)}15%{opacity:1}85%{opacity:1}100%{opacity:0;transform:translateY(100px)}}
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="title-bar">
+    <h1>Kairen Protocol</h1>
+    <p>unified infrastructure for autonomous AI agents</p>
+  </div>
+
+  <div class="layers-container" id="layers">
+    <div class="connector c01" id="c01"></div>
+    <div class="connector c12" id="c12"></div>
+    <div class="connector c23" id="c23"></div>
+
+    <div class="layer l3" id="l3">
+      <span class="layer-tag">L3+4</span>
+      <span class="layer-name">Market + X402N</span>
+      <span class="layer-desc">Service aggregator, autonomous negotiation, USDC micropayments via Circle</span>
+      <div class="layer-icons">
+        <div class="layer-icon">🔍</div>
+        <div class="layer-icon">💰</div>
+      </div>
+    </div>
+
+    <div class="layer l2" id="l2">
+      <span class="layer-tag">L2</span>
+      <span class="layer-name">AgentNet</span>
+      <span class="layer-desc">Network routing infrastructure · reputation-based access tiers</span>
+      <div class="layer-icons">
+        <div class="layer-icon">🌐</div>
+        <div class="layer-icon">⚡</div>
+      </div>
+    </div>
+
+    <div class="layer l1" id="l1">
+      <span class="layer-tag">L1</span>
+      <span class="layer-name">ForgeID</span>
+      <span class="layer-desc">Agent identity · Forge Score 0–1000 · five-tier reputation system · SDK</span>
+      <div class="layer-icons">
+        <div class="layer-icon">🪪</div>
+        <div class="layer-icon">⭐</div>
+      </div>
+    </div>
+
+    <div class="layer l0" id="l0">
+      <span class="layer-tag">L0</span>
+      <span class="layer-name">Foundation</span>
+      <span class="layer-desc">EVM + Solana settlement · Circle USDC across 15+ blockchains</span>
+      <div class="layer-icons">
+        <div class="layer-icon">⛓️</div>
+        <div class="layer-icon">💳</div>
+      </div>
+    </div>
+
+    <div class="flywheel" id="flywheel">
+      <div class="flywheel-ring"></div>
+      <div class="flywheel-label top">Reputation</div>
+      <div class="flywheel-label right">Access</div>
+      <div class="flywheel-label bottom">Deals</div>
+      <div class="flywheel-label left">Trust</div>
+      <div class="flywheel-center">Kairen<br>Flywheel</div>
+    </div>
+  </div>
+
+  <div class="step-indicator">
+    <div class="step-text" id="stepText"></div>
+  </div>
+</div>
+
+<script>
+const steps = [
+  { action: 'showLayer', target: 'l0', text: 'Layer 0 — Multi-chain settlement on EVM + Solana with Circle USDC across 15+ blockchains' },
+  { action: 'showLayer', target: 'l1', text: 'Layer 1 — ForgeID: verifiable agent identity with behavioral reputation scoring (0–1000)' },
+  { action: 'showConnector', target: 'c23', text: 'Identity determines network access — higher reputation unlocks premium routing tiers' },
+  { action: 'showLayer', target: 'l2', text: 'Layer 2 — AgentNet: reputation-based infrastructure routing and priority network access' },
+  { action: 'showConnector', target: 'c12', text: 'Network access enables marketplace discovery and autonomous deal negotiation' },
+  { action: 'showLayer', target: 'l3', text: 'Layer 3+4 — Market for service discovery + X402N for structured negotiation and payments' },
+  { action: 'showConnector', target: 'c01', text: 'Completed deals generate attestations that feed back to ForgeID reputation oracle' },
+  { action: 'highlight', target: 'l1', text: 'Attestations update Forge Score — good behavior compounds into economic advantages' },
+  { action: 'particles', text: 'The Kairen Flywheel: Reputation → Access → Deals → Trust → Higher Reputation ↺' },
+  { action: 'flywheel', text: 'A self-reinforcing ecosystem where the protocol learns and improves with every transaction' },
+  { action: 'showAll', text: 'Kairen Protocol — unified stack for identity, routing, discovery, and payments' },
+];
+
+let currentStep = 0;
+const stepText = document.getElementById('stepText');
+
+function reset() {
+  ['l0','l1','l2','l3'].forEach(id => {
+    document.getElementById(id).classList.remove('visible','highlight');
+  });
+  ['c01','c12','c23'].forEach(id => {
+    document.getElementById(id).classList.remove('visible');
+  });
+  document.getElementById('flywheel').classList.remove('visible');
+  document.querySelectorAll('.flow-particle').forEach(p => p.remove());
+}
+
+function spawnParticles(fromY, color, direction) {
+  const container = document.getElementById('layers');
+  for (let i = 0; i < 3; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = `flow-particle ${direction}`;
+      p.style.color = color;
+      p.style.background = color;
+      p.style.left = (320 + Math.random() * 50) + 'px';
+      p.style.top = fromY + 'px';
+      container.appendChild(p);
+      setTimeout(() => p.remove(), 1800);
+    }, i * 220);
+  }
+}
+
+function runStep() {
+  const step = steps[currentStep];
+  stepText.classList.remove('active');
+  setTimeout(() => {
+    stepText.textContent = step.text;
+    stepText.classList.add('active');
+  }, 150);
+
+  switch(step.action) {
+    case 'showLayer':
+      document.getElementById(step.target).classList.add('visible');
+      break;
+    case 'showConnector':
+      document.getElementById(step.target).classList.add('visible');
+      break;
+    case 'highlight':
+      document.getElementById(step.target).classList.add('highlight');
+      break;
+    case 'particles':
+      spawnParticles(148, '#fb923c', 'down');
+      setTimeout(() => spawnParticles(324, '#4ade80', 'up'), 420);
+      break;
+    case 'flywheel':
+      document.getElementById('flywheel').classList.add('visible');
+      break;
+    case 'showAll':
+      ['l0','l1','l2','l3'].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.add('visible');
+        el.classList.remove('highlight');
+      });
+      ['c01','c12','c23'].forEach(id => document.getElementById(id).classList.add('visible'));
+      document.getElementById('flywheel').classList.add('visible');
+      break;
+  }
+
+  currentStep++;
+  if (currentStep >= steps.length) {
+    setTimeout(() => { reset(); currentStep = 0; setTimeout(runStep, 1000); }, 3800);
+  } else {
+    setTimeout(runStep, 2600);
+  }
+}
+
+setTimeout(runStep, 1400);
+</script>
+</body>
+</html>

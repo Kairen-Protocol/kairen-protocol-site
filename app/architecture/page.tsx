@@ -1,128 +1,9 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { Shield, Terminal, FileText, ArrowLeft, Layers, Network, ShoppingBag, CreditCard, Database } from 'lucide-react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Text, Box } from '@react-three/drei';
-import * as THREE from 'three';
-
-function LayerBox({ position, color, label, sublabel, opacity = 1, blur = false }: any) {
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <group position={position}>
-      <Box
-        args={[4, 0.3, 2]}
-        onPointerOver={() => setHovered(true)}
-        onPointerOut={() => setHovered(false)}
-      >
-        <meshStandardMaterial
-          color={color}
-          transparent
-          opacity={blur ? 0.3 : opacity}
-          emissive={color}
-          emissiveIntensity={hovered ? 0.5 : 0.2}
-          roughness={0.3}
-          metalness={0.8}
-        />
-      </Box>
-      <Text
-        position={[0, 0, 1.1]}
-        fontSize={0.2}
-        color="#00ff00"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.01}
-        outlineColor="#000000"
-      >
-        {label}
-      </Text>
-      <Text
-        position={[0, -0.15, 1.1]}
-        fontSize={0.12}
-        color="#00ffff"
-        anchorX="center"
-        anchorY="middle"
-      >
-        {sublabel}
-      </Text>
-      {blur && (
-        <Text
-          position={[0, 0, 1.2]}
-          fontSize={0.15}
-          color="#ffff00"
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.02}
-          outlineColor="#000000"
-        >
-          COMING SOON
-        </Text>
-      )}
-    </group>
-  );
-}
-
-function Scene() {
-  return (
-    <>
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} intensity={1} color="#00ff00" />
-      <pointLight position={[-10, -10, -10]} intensity={0.5} color="#00ffff" />
-
-      {/* Layer 4 - X402N */}
-      <LayerBox
-        position={[0, 2.5, 0]}
-        color="#00ff00"
-        label="LAYER 4: X402N"
-        sublabel="PAYMENTS"
-      />
-
-      {/* Layer 3 - Market */}
-      <LayerBox
-        position={[0, 1.5, 0]}
-        color="#00dd00"
-        label="LAYER 3: MARKET"
-        sublabel="SERVICE AGGREGATOR"
-      />
-
-      {/* Layer 2 - AgentNet (Coming Soon) */}
-      <LayerBox
-        position={[0, 0.5, 0]}
-        color="#00aa00"
-        label="LAYER 2: AGENTNET"
-        sublabel="NETWORK ROUTING"
-        blur={true}
-      />
-
-      {/* Layer 1 - ForgeID */}
-      <LayerBox
-        position={[0, -0.5, 0]}
-        color="#008800"
-        label="LAYER 1: FORGEID"
-        sublabel="IDENTITY & REPUTATION"
-      />
-
-      {/* Layer 0 - Foundation */}
-      <LayerBox
-        position={[0, -1.5, 0]}
-        color="#00ffff"
-        label="LAYER 0: EVM + SOLANA + CIRCLE"
-        sublabel="SETTLEMENT"
-      />
-
-      <OrbitControls
-        enableZoom={true}
-        enablePan={false}
-        minPolarAngle={Math.PI / 4}
-        maxPolarAngle={Math.PI / 2}
-        autoRotate
-        autoRotateSpeed={0.5}
-      />
-    </>
-  );
-}
+import { Shield, Terminal, FileText, Layers, Network, ShoppingBag, CreditCard, Database } from 'lucide-react';
+import LayerAnimations from '@/components/LayerAnimations';
 
 export default function ArchitecturePage() {
   const [activeLayer, setActiveLayer] = useState<string | null>(null);
@@ -243,41 +124,19 @@ export default function ArchitecturePage() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-0">
-          {/* Left: 3D Visualization */}
-          <div className="border-r border-green-500/30 bg-black/90 backdrop-blur-sm h-screen sticky top-0">
-            <div className="p-6 border-b border-green-500/30">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="status-dot" />
-                <span className="text-xs text-green-500 uppercase tracking-wider">Interactive 3D Model</span>
-              </div>
-              <p className="text-xs text-green-500/70 font-mono">
-                // ROTATE • ZOOM • EXPLORE THE STACK
-              </p>
-            </div>
-
-            <div className="h-[calc(100vh-120px)]">
-              <Suspense fallback={
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-green-500 font-mono text-sm">
-                    [LOADING 3D VISUALIZATION...]
-                  </div>
-                </div>
-              }>
-                <Canvas camera={{ position: [5, 3, 5], fov: 50 }}>
-                  <Scene />
-                </Canvas>
-              </Suspense>
-            </div>
-          </div>
-
-          {/* Right: Layer Details */}
-          <div className="p-12 max-w-3xl">
+        <div className="grid lg:grid-cols-1 gap-0">
+          {/* Main Content */}
+          <div className="p-12 max-w-6xl mx-auto">
             <div className="mb-8">
               <h2 className="text-3xl font-black mb-4 glow-text">FOUR-LAYER ARCHITECTURE</h2>
-              <p className="text-sm text-green-400/80 font-mono leading-relaxed">
+              <p className="text-sm text-green-400/80 font-mono leading-relaxed mb-8">
                 Kairen Protocol is a unified stack where each layer depends on the one below it and enriches the one above it. A single reputation metric (Forge Score) flows through every layer, compounding good behavior into tangible economic advantage.
               </p>
+
+              {/* Interactive Layer Animations */}
+              <div className="mb-12">
+                <LayerAnimations />
+              </div>
             </div>
 
             <div className="space-y-6">

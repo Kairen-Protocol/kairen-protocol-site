@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentNet — Network Routing Layer</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#e4e4e7;font-family:'Inter',sans-serif;overflow:hidden;height:100vh;width:100vw}
+.canvas{position:relative;width:100vw;height:100vh}
+.header{position:absolute;top:32px;left:40px;z-index:10}
+.header h1{font-size:12px;font-family:'JetBrains Mono',monospace;color:#4ade80;font-weight:400;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px}
+.header h2{font-size:24px;font-weight:600;color:#fafafa;letter-spacing:-0.02em}
+.header p{font-size:12px;color:#71717a;margin-top:6px;font-family:'JetBrains Mono',monospace;font-weight:300}
+.step-bar{position:absolute;bottom:32px;left:0;right:0;text-align:center;z-index:10;padding:0 40px}
+.step-bar span{font-size:13px;color:#a1a1aa;font-family:'JetBrains Mono',monospace;opacity:0;transition:opacity .5s;line-height:1.6;font-weight:300}
+.step-bar span.active{opacity:1}
+.scene{position:absolute;inset:100px 32px 80px;display:flex;align-items:center;justify-content:center}
+
+/* Agents column */
+.agents-col{position:absolute;left:40px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:14px}
+.ag{width:120px;padding:9px 11px;background:rgba(24,24,27,.6);border:1px solid rgba(255,255,255,.05);border-radius:8px;display:flex;align-items:center;gap:8px;opacity:0;transition:all .7s}
+.ag.visible{opacity:1}
+.ag.routed{border-color:rgba(34,197,94,.3);box-shadow:0 0 12px rgba(34,197,94,.08)}
+.ag.routed-pub{border-color:rgba(251,146,60,.25);box-shadow:0 0 10px rgba(251,146,60,.06)}
+.ag-icon{font-size:18px}
+.ag-info{flex:1}
+.ag-tier{font-size:9px;font-family:'JetBrains Mono',monospace;padding:1px 5px;border-radius:3px;display:inline-block;margin-bottom:2px;font-weight:400}
+.ag-tier.elite{background:rgba(251,146,60,.1);color:#fb923c;border:1px solid rgba(251,146,60,.2)}
+.ag-tier.senior{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
+.ag-tier.member{background:rgba(59,130,246,.1);color:#60a5fa;border:1px solid rgba(59,130,246,.2)}
+.ag-tier.assoc{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+.ag-score{font-size:10px;font-weight:500;font-family:'JetBrains Mono',monospace;color:#a1a1aa}
+
+/* Gateway */
+.gateway{position:absolute;left:200px;top:50%;transform:translateY(-50%);width:150px;height:280px;background:rgba(24,24,27,.7);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px;opacity:0;transition:all .7s;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gateway.visible{opacity:1}
+.gateway.active{border-color:rgba(34,197,94,.2);box-shadow:0 0 20px rgba(34,197,94,.06)}
+.gw-title{font-size:10px;font-family:'JetBrains Mono',monospace;color:#4ade80;letter-spacing:0.06em;margin-bottom:8px;text-transform:uppercase;font-weight:400}
+.gw-name{font-size:15px;font-weight:600;color:#fafafa;margin-bottom:14px}
+.gw-check{font-size:10px;color:#52525b;font-family:'JetBrains Mono',monospace;margin:3px 0;text-align:center;opacity:0;transition:opacity .5s;font-weight:300}
+.gw-check.show{opacity:1}
+.gw-check .tick{color:#4ade80}
+.gw-divider{width:75%;height:1px;background:rgba(255,255,255,.06);margin:11px 0}
+.gw-route{font-size:10px;font-family:'JetBrains Mono',monospace;text-align:center;margin:3px 0;opacity:0;transition:opacity .5s;font-weight:400}
+.gw-route.show{opacity:1}
+.gw-route.fiber{color:#4ade80}
+.gw-route.public{color:#fb923c}
+
+/* Network paths */
+.net-paths{position:absolute;right:40px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:28px}
+.net-path{width:260px;padding:14px;border-radius:10px;opacity:0;transition:all .7s;background:rgba(24,24,27,.6);border:1px solid rgba(255,255,255,.05)}
+.net-path.visible{opacity:1}
+.np-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.np-icon{font-size:18px}
+.np-name{font-size:13px;font-weight:600}
+.np-tag{font-size:9px;font-family:'JetBrains Mono',monospace;padding:2px 6px;border-radius:3px;margin-left:auto;font-weight:400}
+.net-path.n1 .np-name{color:#4ade80}
+.net-path.n1 .np-tag{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+.net-path.pub .np-name{color:#fb923c}
+.net-path.pub .np-tag{background:rgba(251,146,60,.1);color:#fb923c;border:1px solid rgba(251,146,60,.2)}
+.np-stats{display:flex;gap:14px;margin-top:8px}
+.np-stat{text-align:center}
+.np-stat-val{font-size:15px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.net-path.n1 .np-stat-val{color:#4ade80}
+.net-path.pub .np-stat-val{color:#fb923c}
+.np-stat-label{font-size:9px;color:#52525b;font-family:'JetBrains Mono',monospace;font-weight:300;margin-top:2px}
+.np-desc{font-size:11px;color:#71717a;margin-top:8px;line-height:1.5;font-weight:300}
+
+/* Flow arrows */
+.flow-arrow{position:absolute;height:1px;opacity:0;transition:all .5s}
+.flow-arrow.visible{opacity:1}
+.flow-arrow.fiber-line{background:linear-gradient(90deg,rgba(74,222,128,.4),transparent);top:calc(50% - 52px);left:352px;width:90px}
+.flow-arrow.pub-line{background:linear-gradient(90deg,rgba(251,146,60,.4),transparent);top:calc(50% + 12px);left:352px;width:90px}
+.flow-arrow.in-line{left:162px;width:36px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15))}
+.in1{top:calc(50% - 64px)}
+.in2{top:calc(50% - 26px)}
+.in3{top:calc(50% + 12px)}
+.in4{top:calc(50% + 50px)}
+
+/* Coming Soon Overlay */
+.coming-soon-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center}
+.coming-soon-card{background:rgba(24,24,27,0.95);border:1px solid rgba(74,222,128,0.2);border-radius:12px;padding:32px 48px;text-align:center;box-shadow:0 0 40px rgba(74,222,128,0.12)}
+.coming-soon-title{font-size:32px;font-weight:700;color:#4ade80;margin-bottom:12px;letter-spacing:-0.01em}
+.coming-soon-subtitle{font-size:14px;color:#71717a;font-family:'JetBrains Mono',monospace;font-weight:300;line-height:1.6}
+.pulse-dot{width:12px;height:12px;background:#4ade80;border-radius:50%;display:inline-block;margin-right:8px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
+</style>
+</head>
+<body>
+<!-- Coming Soon Overlay -->
+<div class="coming-soon-overlay">
+  <div class="coming-soon-card">
+    <div class="coming-soon-title">
+      <span class="pulse-dot"></span>
+      Coming Soon
+    </div>
+    <div class="coming-soon-subtitle">
+      AgentNet infrastructure details will be revealed closer to launch
+      <br>
+      Q2 2026 · Network routing layer for AI agents
+    </div>
+  </div>
+</div>
+<div class="canvas">
+  <div class="header">
+    <h1>Layer 2</h1>
+    <h2>AgentNet — Network Routing</h2>
+    <p>reputation-based access to premium infrastructure</p>
+  </div>
+
+  <div class="scene">
+    <div class="agents-col" id="agentsCol">
+      <div class="ag" id="ag1"><span class="ag-icon">🤖</span><div class="ag-info"><span class="ag-tier elite">Elite 910</span><div class="ag-score">DeFi Bot</div></div></div>
+      <div class="ag" id="ag2"><span class="ag-icon">🧠</span><div class="ag-info"><span class="ag-tier senior">Senior 780</span><div class="ag-score">Data Agent</div></div></div>
+      <div class="ag" id="ag3"><span class="ag-icon">📊</span><div class="ag-info"><span class="ag-tier member">Member 640</span><div class="ag-score">Analytics</div></div></div>
+      <div class="ag" id="ag4"><span class="ag-icon">🔧</span><div class="ag-info"><span class="ag-tier assoc">Assoc 520</span><div class="ag-score">New Agent</div></div></div>
+    </div>
+
+    <div class="flow-arrow in-line in1" id="in1"></div>
+    <div class="flow-arrow in-line in2" id="in2"></div>
+    <div class="flow-arrow in-line in3" id="in3"></div>
+    <div class="flow-arrow in-line in4" id="in4"></div>
+
+    <div class="gateway" id="gateway">
+      <div class="gw-title">Kairen RPC</div>
+      <div class="gw-name">Gateway</div>
+      <div class="gw-check" id="gwc1"><span class="tick">✓</span> verify tier</div>
+      <div class="gw-check" id="gwc2"><span class="tick">✓</span> check score</div>
+      <div class="gw-check" id="gwc3"><span class="tick">✓</span> check status</div>
+      <div class="gw-divider"></div>
+      <div class="gw-route fiber" id="gwr1">Senior+ → Premium</div>
+      <div class="gw-route public" id="gwr2">Others → Public</div>
+    </div>
+
+    <div class="flow-arrow fiber-line" id="fiberLine"></div>
+    <div class="flow-arrow pub-line" id="pubLine"></div>
+
+    <div class="net-paths">
+      <div class="net-path n1" id="pathN1">
+        <div class="np-header"><span class="np-icon">⚡</span><span class="np-name">Premium Routing</span><span class="np-tag">Senior+</span></div>
+        <div class="np-stats">
+          <div class="np-stat"><div class="np-stat-val">&lt;5ms</div><div class="np-stat-label">latency</div></div>
+          <div class="np-stat"><div class="np-stat-val">8x</div><div class="np-stat-label">faster</div></div>
+          <div class="np-stat"><div class="np-stat-val">99.99%</div><div class="np-stat-label">uptime</div></div>
+        </div>
+        <div class="np-desc">Dedicated infrastructure · priority routing · guaranteed SLA</div>
+      </div>
+      <div class="net-path pub" id="pathPub">
+        <div class="np-header"><span class="np-icon">🌐</span><span class="np-name">Public Access</span><span class="np-tag">All Tiers</span></div>
+        <div class="np-stats">
+          <div class="np-stat"><div class="np-stat-val">Variable</div><div class="np-stat-label">latency</div></div>
+          <div class="np-stat"><div class="np-stat-val">99.9%</div><div class="np-stat-label">uptime</div></div>
+        </div>
+        <div class="np-desc">Standard routing · shared bandwidth · best-effort delivery</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-bar"><span id="stepText"></span></div>
+</div>
+
+<script>
+const stepText = document.getElementById('stepText');
+const steps = [
+  { text: 'Agents of all reputation tiers connect to the Kairen RPC Gateway for network access', fn: () => {
+    ['ag1','ag2','ag3','ag4'].forEach((id,i) => {
+      setTimeout(() => document.getElementById(id).classList.add('visible'), i*280);
+    });
+  }},
+  { text: 'The gateway verifies each agent's ForgeID tier and reputation score in real-time', fn: () => {
+    document.getElementById('gateway').classList.add('visible','active');
+    ['in1','in2','in3','in4'].forEach((id,i) => {
+      setTimeout(() => document.getElementById(id).classList.add('visible'), i*190);
+    });
+  }},
+  { text: 'Gateway checks: valid Forge Pass? Active status? Current tier and score?', fn: () => {
+    ['gwc1','gwc2','gwc3'].forEach((id,i) => {
+      setTimeout(() => document.getElementById(id).classList.add('show'), i*460);
+    });
+  }},
+  { text: 'Routing decision: Senior + Elite agents → Premium routing with guaranteed low latency', fn: () => {
+    document.getElementById('gwr1').classList.add('show');
+    document.getElementById('pathN1').classList.add('visible');
+    document.getElementById('fiberLine').classList.add('visible');
+    document.getElementById('ag1').classList.add('routed');
+    document.getElementById('ag2').classList.add('routed');
+  }},
+  { text: 'Associate + Member agents → Public access with best-effort delivery and shared bandwidth', fn: () => {
+    document.getElementById('gwr2').classList.add('show');
+    document.getElementById('pathPub').classList.add('visible');
+    document.getElementById('pubLine').classList.add('visible');
+    document.getElementById('ag3').classList.add('routed-pub');
+    document.getElementById('ag4').classList.add('routed-pub');
+  }},
+  { text: 'Premium routing: 8x faster, sub-5ms latency, 99.99% uptime — quality scales with reputation', fn: () => {
+    document.getElementById('pathN1').style.borderColor = 'rgba(34,197,94,.2)';
+    document.getElementById('pathN1').style.boxShadow = '0 0 20px rgba(34,197,94,.08)';
+  }},
+  { text: 'Premium access is earned through reputation — not purchased. Build trust, unlock infrastructure ↺', fn: () => {
+    // emphasize the connection
+  }},
+];
+
+let currentStep = 0;
+function resetAll() {
+  ['ag1','ag2','ag3','ag4'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('visible','routed','routed-pub');
+  });
+  document.getElementById('gateway').classList.remove('visible','active');
+  ['in1','in2','in3','in4','fiberLine','pubLine'].forEach(id => {
+    document.getElementById(id).classList.remove('visible');
+  });
+  ['gwc1','gwc2','gwc3','gwr1','gwr2'].forEach(id => {
+    document.getElementById(id).classList.remove('show');
+  });
+  ['pathN1','pathPub'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('visible');
+    el.style.borderColor = '';
+    el.style.boxShadow = '';
+  });
+}
+
+function runStep() {
+  const step = steps[currentStep];
+  stepText.classList.remove('active');
+  setTimeout(() => {
+    stepText.textContent = step.text;
+    stepText.classList.add('active');
+  }, 150);
+  step.fn();
+  currentStep++;
+  if (currentStep >= steps.length) {
+    setTimeout(() => { resetAll(); currentStep = 0; setTimeout(runStep, 900); }, 3600);
+  } else {
+    setTimeout(runStep, 3000);
+  }
+}
+setTimeout(runStep, 1200);
+</script>
+</body>
+</html>
