@@ -125,14 +125,16 @@ const STEPS = [
 const ROW_DELAY = 700;
 const STEP_PAUSE = 1800;
 
-const tagColors = {
+type TagColorType = 'api' | 'state' | 'pay' | 'err';
+
+const tagColors: Record<TagColorType, { bg: string; text: string; border: string }> = {
   api: { bg: "rgba(55,138,221,0.12)", text: "#378ADD", border: "rgba(55,138,221,0.25)" },
   state: { bg: "rgba(29,158,117,0.12)", text: "#1D9E75", border: "rgba(29,158,117,0.25)" },
   pay: { bg: "rgba(186,117,23,0.12)", text: "#BA7517", border: "rgba(186,117,23,0.25)" },
   err: { bg: "rgba(226,75,74,0.12)", text: "#E24B4A", border: "rgba(226,75,74,0.25)" },
 };
 
-const stateColors = {
+const stateColors: Record<string, string> = {
   OPEN: "#1D9E75", EVALUATING: "#BA7517", ACCEPTED: "#378ADD",
   PENDING_PAYMENT: "#BA7517", PENDING: "#888780", ACTIVE: "#378ADD",
   LOCKED: "#D4537E", DELIVERED: "#7F77DD", COMPLETED: "#1D9E75",
@@ -280,7 +282,7 @@ export default function X402nFlow() {
             const visible = i < visibleRows;
             const fromIdx = actorIdx(row.from);
             const toIdx = actorIdx(row.to);
-            const tc = tagColors[row.type] || tagColors.api;
+            const tc = tagColors[row.type as TagColorType] || tagColors.api;
             const isLoop = row.from === row.to;
 
             return (
@@ -313,7 +315,7 @@ export default function X402nFlow() {
                 {/* Message + tag */}
                 <span style={{ flex: 1, fontSize: 12, color: "#aaa", lineHeight: 1.5 }}>
                   {row.label}
-                  {row.detail && (
+                  {'detail' in row && row.detail && (
                     <span style={{ display: "block", fontSize: 10, color: "#777", marginTop: 1 }}>
                       {row.detail}
                     </span>
