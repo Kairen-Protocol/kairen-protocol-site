@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ['three'],
+  turbopack: {
+    // Keep Next.js rooted in this website repo even when other lockfiles exist nearby.
+    root: process.cwd(),
+  },
 
   // Security headers
   async headers() {
