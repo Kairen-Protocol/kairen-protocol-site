@@ -1,17 +1,31 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import ThemeBoot from "@/components/ThemeBoot";
+import type { Metadata } from 'next';
+import { IBM_Plex_Mono, Space_Grotesk } from 'next/font/google';
+import './globals.css';
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-display',
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-mono',
 });
 
 export const metadata: Metadata = {
-  title: "Kairen - Service Aggregator for Autonomous AI Agents",
-  description: "Multi-chain infrastructure aggregator for AI agents. Discover services, negotiate deals, and manage payments across 15+ blockchains via Solana and Circle.",
-  keywords: ["AI agents", "Solana", "blockchain", "service aggregator", "payments", "marketplace", "infrastructure", "Web3", "Kairen", "X402N"],
+  title: 'Kairen | Sealed-Bid Procurement on Solana',
+  description:
+    'Kairen is a sealed-bid procurement engine for teams, DAOs, and AI agents. Create escrow-backed tenders, collect hidden bids, and settle digital work onchain.',
+  keywords: [
+    'Kairen',
+    'procurement',
+    'Solana',
+    'sealed bids',
+    'escrow',
+    'AI agents',
+    'DAO tooling',
+  ],
   metadataBase: new URL('https://kairen.xyz'),
 };
 
@@ -21,9 +35,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} font-sans`}>
-        <ThemeBoot />
+    <html lang="en">
+      <body className={`${spaceGrotesk.variable} ${plexMono.variable}`}>
         {children}
       </body>
     </html>

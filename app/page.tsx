@@ -1,58 +1,91 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Shield, Terminal, FileText, Activity, Network, Check, AlertCircle, Sun, Moon, MonitorCog } from 'lucide-react';
-import UserTypeToggle from '@/components/UserTypeToggle';
+import type { FormEvent } from 'react';
+import { useState } from 'react';
+import {
+  ArrowRight,
+  Bot,
+  Boxes,
+  CheckCircle2,
+  Gavel,
+  LockKeyhole,
+  Radar,
+  ShieldCheck,
+  Wallet,
+  Workflow,
+} from 'lucide-react';
+
+const audiences = [
+  {
+    title: 'Ops & finance teams',
+    description: 'Run digital service procurement without spreadsheet quote collection, manual comparisons, or payout chaos.',
+  },
+  {
+    title: 'DAOs & crypto-native orgs',
+    description: 'Add escrow, hidden bids, and accountability to contributor and vendor selection workflows.',
+  },
+  {
+    title: 'AI agents',
+    description: 'Create tenders, submit bids, reveal pricing, and settle work through agent-native interfaces.',
+  },
+];
+
+const workflowSteps = [
+  {
+    title: 'Create',
+    description: 'A buyer opens a tender with escrow, deadlines, and evaluation criteria.',
+    icon: Wallet,
+  },
+  {
+    title: 'Commit',
+    description: 'Providers submit sealed bid commitments with a bid bond, without exposing price.',
+    icon: LockKeyhole,
+  },
+  {
+    title: 'Reveal',
+    description: 'Bids are opened after the deadline, preserving price integrity during the active competition.',
+    icon: Radar,
+  },
+  {
+    title: 'Award',
+    description: 'The buyer selects a winner after the reveal window closes.',
+    icon: Gavel,
+  },
+  {
+    title: 'Settle',
+    description: 'Escrow pays the winner onchain and the refund path remains transparent and auditable.',
+    icon: CheckCircle2,
+  },
+];
+
+const trustLayers = [
+  'Onchain escrow using Solana-native program logic',
+  'Commit-reveal bidding to prevent quote leakage',
+  'Dual bonds so both buyers and providers have skin in the game',
+  'Agent-native access via MCP and programmable workflows',
+];
+
+const ecosystem = ['Solana', 'Anchor', 'Helius', 'Jito', 'Phantom', 'MCP'];
+
+const metrics = [
+  { label: 'Instructions live', value: '7' },
+  { label: 'Escrow model', value: 'Onchain' },
+  { label: 'Bid mode', value: 'Sealed' },
+  { label: 'Primary users', value: 'Teams + Agents' },
+];
 
 export default function Home() {
-  const [currentWord, setCurrentWord] = useState(0);
-  const words = ['IDENTITY', 'NETWORK', 'MARKETPLACE', 'PAYMENTS', 'REPUTATION'];
   const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [themeMode, setThemeMode] = useState<'light' | 'dark' | 'system'>('system');
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark');
 
-  useEffect(() => {
-    const storedTheme = window.localStorage.getItem('kairen_theme_mode');
-    if (storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system') {
-      setThemeMode(storedTheme);
-    }
-  }, []);
-
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-
-    const applyTheme = () => {
-      const resolved = themeMode === 'system' ? (media.matches ? 'dark' : 'light') : themeMode;
-      setResolvedTheme(resolved);
-      document.documentElement.setAttribute('data-theme', resolved);
-    };
-
-    applyTheme();
-    window.localStorage.setItem('kairen_theme_mode', themeMode);
-
-    if (themeMode === 'system') {
-      media.addEventListener('change', applyTheme);
-      return () => media.removeEventListener('change', applyTheme);
-    }
-    return;
-  }, [themeMode]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentWord((prev) => (prev + 1) % words.length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleWaitlistSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Reuse the existing waitlist endpoint so this redesign ships without backend changes.
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus('idle');
+    setMessage('');
     setIsSubmitting(true);
-    setSubmitStatus('idle');
-    setErrorMessage('');
 
     try {
       const response = await fetch('/api/waitlist', {
@@ -66,318 +99,293 @@ export default function Home() {
       const data = await response.json();
 
       if (!response.ok) {
-        setSubmitStatus('error');
-        setErrorMessage(data.error || 'An error occurred. Please try again.');
+        setStatus('error');
+        setMessage(data.error || 'Something went wrong. Please try again.');
         return;
       }
 
-      setSubmitStatus('success');
+      setStatus('success');
+      setMessage(data.message || 'You are on the list.');
       setEmail('');
-    } catch (error) {
-      setSubmitStatus('error');
-      setErrorMessage('Network error. Please check your connection and try again.');
+    } catch {
+      setStatus('error');
+      setMessage('Network error. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className={`theme-shell ${resolvedTheme === 'light' ? 'theme-light' : 'theme-dark'} min-h-screen bg-black text-green-400 relative overflow-hidden`}>
-      {/* Scanlines overlay */}
-      <div className="scanlines" />
+    <main className="min-h-screen bg-[#f5f0e8] text-[#11233b]">
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(228,97,58,0.16),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(34,94,168,0.14),transparent_32%)]" />
+        <div className="absolute inset-x-0 top-0 h-[28rem] bg-[linear-gradient(135deg,rgba(17,35,59,0.06),transparent_60%)]" />
 
-      {/* Matrix rain background */}
-      <div className="fixed inset-0 pointer-events-none opacity-5 z-0">
-        <div className="absolute top-0 left-0 text-xs text-green-500 whitespace-pre font-mono animate-matrix-fall">
-          {Array(100).fill(0).map((_, i) => (
-            <div key={i} className="inline-block mx-1">01010101</div>
-          ))}
-        </div>
+        <header className="sticky top-0 z-30 border-b border-[#11233b]/10 bg-[#f5f0e8]/85 backdrop-blur">
+          <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+            <a href="#" className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#11233b] text-sm font-semibold tracking-[0.24em] text-[#f5f0e8]">
+                K
+              </div>
+              <div>
+                <div className="text-xs font-medium uppercase tracking-[0.22em] text-[#e4613a]">Kairen</div>
+                <div className="text-sm text-[#11233b]/70">Procurement Engine</div>
+              </div>
+            </a>
+
+            <div className="hidden items-center gap-8 text-sm text-[#11233b]/72 md:flex">
+              <a href="#how-it-works" className="transition hover:text-[#11233b]">How it works</a>
+              <a href="#trust-layer" className="transition hover:text-[#11233b]">Trust model</a>
+              <a href="#ecosystem" className="transition hover:text-[#11233b]">Stack</a>
+              <a href="#waitlist" className="transition hover:text-[#11233b]">Waitlist</a>
+            </div>
+
+            <a
+              href="#waitlist"
+              className="inline-flex items-center gap-2 rounded-full border border-[#11233b]/12 bg-white px-4 py-2 text-sm font-medium text-[#11233b] shadow-[0_12px_40px_rgba(17,35,59,0.08)] transition hover:-translate-y-0.5"
+            >
+              Request access
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </nav>
+        </header>
+
+        <section className="relative mx-auto max-w-7xl px-6 pb-20 pt-16 md:pb-24 md:pt-20">
+          <div className="grid gap-14 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
+            <div>
+              <div className="mb-6 flex flex-wrap gap-3">
+                <span className="rounded-full border border-[#11233b]/12 bg-white/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#11233b]/75">
+                  Sealed-bid procurement
+                </span>
+                <span className="rounded-full border border-[#e4613a]/20 bg-[#e4613a]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#c54d27]">
+                  Built for Solana teams & AI agents
+                </span>
+              </div>
+
+              <h1 className="max-w-4xl text-5xl font-semibold leading-[0.95] tracking-[-0.06em] text-[#11233b] md:text-7xl">
+                Procurement without quote leakage, payout ambiguity, or inbox chaos.
+              </h1>
+
+              <p className="mt-8 max-w-2xl text-lg leading-8 text-[#11233b]/72 md:text-xl">
+                Kairen helps teams, DAOs, and agents create escrow-backed tenders, collect hidden bids, and settle digital work onchain with a clear audit trail.
+              </p>
+
+              <div className="mt-10 flex flex-wrap gap-4">
+                <a
+                  href="#waitlist"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#11233b] px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#0b1a2d]"
+                >
+                  Join the waitlist
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+                <a
+                  href="#how-it-works"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#11233b]/15 px-6 py-3 text-sm font-semibold text-[#11233b] transition hover:-translate-y-0.5 hover:bg-white/70"
+                >
+                  See the lifecycle
+                </a>
+              </div>
+
+              <div className="mt-14 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {metrics.map((metric) => (
+                  <div key={metric.label} className="rounded-[1.5rem] border border-[#11233b]/10 bg-white/80 p-5 shadow-[0_18px_60px_rgba(17,35,59,0.07)]">
+                    <div className="text-3xl font-semibold tracking-[-0.05em] text-[#11233b]">{metric.value}</div>
+                    <div className="mt-2 text-sm text-[#11233b]/62">{metric.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <aside className="rounded-[2rem] border border-[#11233b]/10 bg-[#11233b] p-7 text-white shadow-[0_28px_90px_rgba(17,35,59,0.18)]">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[#f2b88a]">Live flow</div>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">From tender to settlement</h2>
+                </div>
+                <Workflow className="h-7 w-7 text-[#f2b88a]" />
+              </div>
+
+              <div className="mt-8 space-y-4">
+                {workflowSteps.map((step, index) => {
+                  const Icon = step.icon;
+
+                  return (
+                    <div key={step.title} className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-[#f2b88a]">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="text-xs uppercase tracking-[0.2em] text-white/45">Step {index + 1}</div>
+                          <div className="mt-1 text-lg font-medium">{step.title}</div>
+                          <p className="mt-2 text-sm leading-6 text-white/72">{step.description}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-8 rounded-[1.5rem] border border-[#f2b88a]/30 bg-[#e4613a]/10 p-5">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#f2b88a]">Why now</div>
+                <p className="mt-3 text-sm leading-7 text-white/78">
+                  AI agents are becoming real economic actors, but they still lack a procurement layer. Kairen makes vendor selection programmable without losing fairness.
+                </p>
+              </div>
+            </aside>
+          </div>
+        </section>
       </div>
 
-      {/* Left sidebar navigation */}
-      <aside className="fixed left-0 top-0 bottom-0 w-16 border-r border-green-500/30 bg-black/90 backdrop-blur-sm z-50 flex flex-col items-center py-6 gap-6">
-        <Link href="/" className="group relative" title="HOME">
-          <Shield className="h-6 w-6 text-green-500 group-hover:text-green-400 group-hover:drop-shadow-[0_0_10px_rgba(0,255,0,0.8)] transition-all" />
-          <div className="absolute left-full ml-4 px-2 py-1 bg-black border border-green-500/50 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            HOME
-          </div>
-        </Link>
-        <Link href="/docs" className="group relative" title="DOCS">
-          <FileText className="h-5 w-5 text-green-500/70 hover:text-green-400 hover:drop-shadow-[0_0_10px_rgba(0,255,0,0.8)] transition-all" />
-          <div className="absolute left-full ml-4 px-2 py-1 bg-black border border-green-500/50 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            DOCS
-          </div>
-        </Link>
-        <Link href="/about" className="group relative" title="ABOUT">
-          <Terminal className="h-5 w-5 text-green-500/70 hover:text-green-400 hover:drop-shadow-[0_0_10px_rgba(0,255,0,0.8)] transition-all" />
-          <div className="absolute left-full ml-4 px-2 py-1 bg-black border border-green-500/50 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            ABOUT
-          </div>
-        </Link>
-        <Link href="/architecture" className="group relative" title="ARCHITECTURE">
-          <Network className="h-5 w-5 text-green-500/70 hover:text-green-400 hover:drop-shadow-[0_0_10px_rgba(0,255,0,0.8)] transition-all" />
-          <div className="absolute left-full ml-4 px-2 py-1 bg-black border border-green-500/50 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            ARCHITECTURE
-          </div>
-        </Link>
-        <div className="flex-1" />
-        <div className="w-8 h-px bg-green-500/30" />
-        <div className="status-dot" />
-      </aside>
+      <section className="border-y border-[#11233b]/10 bg-white/60">
+        <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 md:grid-cols-3">
+          {audiences.map((audience) => (
+            <div key={audience.title} className="rounded-[1.5rem] border border-[#11233b]/10 bg-white/90 p-6 shadow-[0_16px_50px_rgba(17,35,59,0.06)]">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[#e4613a]">{audience.title}</div>
+              <p className="mt-4 text-base leading-7 text-[#11233b]/72">{audience.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      {/* Main content */}
-      <div className="ml-16 relative z-10">
-        {/* Top status bar */}
-        <div className="border-b border-green-500/30 bg-black/90 backdrop-blur-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-2 text-xs font-mono">
-            <div className="flex flex-wrap items-center gap-4">
-              <span className="text-yellow-400">[BETA COMING Q2 2026]</span>
-              <span className="text-green-500/50">v0.1.0-alpha</span>
-              <span className="flex items-center gap-2">
-                <Activity className="h-3 w-3 text-green-500 animate-pulse" />
-                <span className="text-green-500">ONLINE</span>
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center justify-end gap-3">
-              <div className="hidden xl:block">
-                <UserTypeToggle variant="compact" />
-              </div>
-              <div className="theme-mode-switch" role="group" aria-label="Theme mode">
-                <button type="button" className={themeMode === 'light' ? 'active' : ''} onClick={() => setThemeMode('light')} aria-pressed={themeMode === 'light'}>
-                  <Sun className="h-3 w-3" />
-                  Light
-                </button>
-                <button type="button" className={themeMode === 'dark' ? 'active' : ''} onClick={() => setThemeMode('dark')} aria-pressed={themeMode === 'dark'}>
-                  <Moon className="h-3 w-3" />
-                  Dark
-                </button>
-                <button type="button" className={themeMode === 'system' ? 'active' : ''} onClick={() => setThemeMode('system')} aria-pressed={themeMode === 'system'}>
-                  <MonitorCog className="h-3 w-3" />
-                  System
-                </button>
-              </div>
-              <span className="text-green-500/70">{new Date().toLocaleTimeString()}</span>
-              <a href="#waitlist" className="text-yellow-400 hover:text-yellow-300 transition-colors">
-                JOIN WAITLIST →
-              </a>
-            </div>
-          </div>
+      <section id="how-it-works" className="mx-auto max-w-7xl px-6 py-24">
+        <div className="max-w-2xl">
+          <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#e4613a]">How it works</div>
+          <h2 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-[#11233b] md:text-5xl">
+            A procurement workflow that behaves more like infrastructure than admin overhead.
+          </h2>
+          <p className="mt-6 text-lg leading-8 text-[#11233b]/72">
+            The protocol keeps the competitive sourcing process intact while giving teams a settlement layer they can actually audit.
+          </p>
         </div>
 
-        {/* Hero Section */}
-        <section className="min-h-screen flex items-center justify-center px-6 py-20 cyber-grid">
-          <div className="max-w-6xl w-full">
-            <div className="grid lg:grid-cols-[1.3fr_0.7fr] gap-12 items-start">
-              {/* Left: Hero Copy */}
-              <div>
-                <div className="mb-6 flex items-center gap-2">
-                  <span className="text-yellow-400 text-xs uppercase tracking-widest">[SYSTEM INITIALIZING...]</span>
-                  <div className="flex-1 h-px bg-green-500/20" />
+        <div className="mt-14 grid gap-5 lg:grid-cols-5">
+          {workflowSteps.map((step, index) => {
+            const Icon = step.icon;
+
+            return (
+              <div key={step.title} className="rounded-[1.75rem] border border-[#11233b]/10 bg-white p-6 shadow-[0_20px_60px_rgba(17,35,59,0.06)]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#11233b] text-white">
+                  <Icon className="h-5 w-5" />
                 </div>
-
-                <div className="mb-4 inline-block px-3 py-1.5 border border-yellow-500 bg-yellow-500/10 text-yellow-400 text-xs font-bold uppercase tracking-wider">
-                  CLOSED BETA • AI AGENTS ONLY
-                </div>
-
-                <h1 className="text-6xl md:text-8xl font-black mb-6 leading-none">
-                  <div className="mb-2">INFRA FOR</div>
-                  <div className="glow-text transition-all duration-300">
-                    {words[currentWord]}
-                    <span className="terminal-cursor">_</span>
-                  </div>
-                </h1>
-
-                <p className="text-lg text-green-400/80 mb-8 max-w-2xl leading-relaxed font-mono">
-                  /// SERVICE AGGREGATOR FOR AUTONOMOUS AI AGENTS
-                  <br />
-                  /// SOLANA + 15+ BLOCKCHAINS VIA CIRCLE
-                  <br />
-                  /// PAYMENTS • MARKETPLACE • NETWORK • IDENTITY
-                </p>
-
-                <div className="mb-8">
-                  <UserTypeToggle />
-                </div>
-
-                <div className="flex flex-wrap gap-4 mb-12">
-                  <Link href="/docs" className="cyber-btn">
-                    READ DOCS
-                  </Link>
-                  <a href="#waitlist" className="cyber-btn-yellow">
-                    JOIN BETA →
-                  </a>
-                </div>
-
-                {/* Multi-chain emphasis */}
-                <div className="cyber-border p-6 bg-black/60 backdrop-blur">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Network className="h-5 w-5 text-cyan-400" />
-                    <span className="text-cyan-400 text-sm font-bold uppercase">Multi-Chain Infrastructure</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                    <div className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
-                      <span className="text-green-400/70">Solana (Native)</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
-                      <span className="text-green-400/70">Ethereum</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
-                      <span className="text-green-400/70">Polygon</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
-                      <span className="text-green-400/70">Arbitrum</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-yellow-500">⚡</span>
-                      <span className="text-green-400/70">+12 More via Circle</span>
-                    </div>
-                  </div>
-                </div>
+                <div className="mt-6 text-sm uppercase tracking-[0.18em] text-[#11233b]/45">{String(index + 1).padStart(2, '0')}</div>
+                <h3 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#11233b]">{step.title}</h3>
+                <p className="mt-4 text-sm leading-7 text-[#11233b]/68">{step.description}</p>
               </div>
+            );
+          })}
+        </div>
+      </section>
 
-              {/* Right: Protocol Stack */}
-              <div className="cyber-card protocol-stack-card p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs text-green-500 uppercase tracking-wider">Protocol Stack</span>
-                  <span className="text-xs text-green-500/50">v1.0</span>
-                </div>
+      <section id="trust-layer" className="bg-[#11233b] text-white">
+        <div className="mx-auto grid max-w-7xl gap-14 px-6 py-24 lg:grid-cols-[0.9fr_1.1fr]">
+          <div>
+            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#f2b88a]">Trust layer</div>
+            <h2 className="mt-4 text-4xl font-semibold tracking-[-0.05em] md:text-5xl">
+              Fair vendor selection needs more than a payment rail.
+            </h2>
+            <p className="mt-6 text-lg leading-8 text-white/72">
+              Kairen is designed around the specific failure modes of digital procurement: quote leakage, weak commitment from either side, fragmented settlement, and missing programmability for agents.
+            </p>
+          </div>
 
-                <div className="space-y-3 font-mono text-sm">
-                  <a href="https://x402n.kairen.xyz" target="_blank" rel="noopener noreferrer" className="protocol-stack-row flex items-center gap-3 py-3 border-b border-green-500/20 hover:bg-green-500/5 transition-all group">
-                    <span className="text-green-500/50 text-xs">L4</span>
-                    <span className="text-green-400 font-bold group-hover:text-green-300">X402N</span>
-                    <span className="ml-auto text-xs bg-yellow-500 text-black px-2 py-0.5 text-[10px] font-bold">CLOSED BETA</span>
-                  </a>
-                  <a href="https://market.kairen.xyz" target="_blank" rel="noopener noreferrer" className="protocol-stack-row flex items-center gap-3 py-3 border-b border-green-500/20 hover:bg-green-500/5 transition-all group">
-                    <span className="text-green-500/50 text-xs">L3</span>
-                    <span className="text-green-400 font-bold group-hover:text-green-300">MARKET</span>
-                    <span className="ml-auto text-xs bg-yellow-500 text-black px-2 py-0.5 text-[10px] font-bold">CLOSED BETA</span>
-                  </a>
-                  <div className="flex items-center gap-3 py-3 border-b border-green-500/20">
-                    <span className="text-green-500/50 text-xs">L2</span>
-                    <span className="text-green-400/70 font-bold">AGENTNET</span>
-                    <span className="ml-auto text-xs bg-yellow-500 text-black px-2 py-0.5 text-[10px] font-bold">SOON</span>
+          <div className="grid gap-4 md:grid-cols-2">
+            {trustLayers.map((layer, index) => (
+              <div key={layer} className="rounded-[1.75rem] border border-white/10 bg-white/5 p-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-[#f2b88a]">
+                    {index === 0 && <ShieldCheck className="h-5 w-5" />}
+                    {index === 1 && <LockKeyhole className="h-5 w-5" />}
+                    {index === 2 && <Boxes className="h-5 w-5" />}
+                    {index === 3 && <Bot className="h-5 w-5" />}
                   </div>
-                  <div className="flex items-center gap-3 py-3 border-b border-green-500/20">
-                    <span className="text-green-500/50 text-xs">L1</span>
-                    <span className="text-green-400/70 font-bold">FORGEID</span>
-                    <span className="ml-auto text-xs bg-yellow-500 text-black px-2 py-0.5 text-[10px] font-bold">SOON</span>
-                  </div>
-                  <div className="flex items-center gap-3 py-3">
-                    <span className="text-green-500/50 text-xs">L0</span>
-                    <span className="text-green-400 font-bold">EVM + SOLANA + CIRCLE</span>
-                    <span className="ml-auto text-xs text-cyan-400">SETTLEMENT</span>
-                  </div>
+                  <div className="text-sm uppercase tracking-[0.18em] text-white/42">Layer {index + 1}</div>
                 </div>
-
-                <div className="mt-6 pt-4 border-t border-green-500/20">
-                  <p className="text-[10px] text-green-500/50 font-mono mb-2">INFRASTRUCTURE DETAILS:</p>
-                  <p className="text-xs text-green-500/70 font-mono leading-relaxed">
-                    X402N: Negotiations • Payments • Dashboard • Deals
-                    <br />
-                    Market: Service Aggregation • Provider Listings • Infrastructure Discovery
-                  </p>
-                </div>
+                <p className="mt-5 text-base leading-7 text-white/78">{layer}</p>
               </div>
-            </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-            {/* Stats Row */}
-            <div className="mt-16 grid grid-cols-4 gap-6 font-mono">
-              {[
-                { label: 'LAYERS', value: '4' },
-                { label: 'CHAINS', value: '15+' },
-                { label: 'FINALITY', value: '<1s' },
-                { label: 'MIN PAYMENT', value: '$0.0001' },
-              ].map((stat, i) => (
-                <div key={i} className="text-center cyber-border p-4 bg-black/60 hover:border-green-500 transition-all">
-                  <div className="text-3xl font-bold text-green-400 glow-text mb-1">{stat.value}</div>
-                  <div className="text-xs text-green-500/70 uppercase tracking-wider">{stat.label}</div>
+      <section id="ecosystem" className="mx-auto max-w-7xl px-6 py-24">
+        <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
+          <div>
+            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#e4613a]">Stack & ecosystem</div>
+            <h2 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-[#11233b] md:text-5xl">
+              Built for teams that want agent-native workflows without losing operational control.
+            </h2>
+          </div>
+
+          <div className="rounded-[2rem] border border-[#11233b]/10 bg-white p-8 shadow-[0_20px_60px_rgba(17,35,59,0.07)]">
+            <div className="grid gap-3 sm:grid-cols-3">
+              {ecosystem.map((item) => (
+                <div key={item} className="rounded-full border border-[#11233b]/10 bg-[#f5f0e8] px-4 py-3 text-center text-sm font-semibold text-[#11233b]">
+                  {item}
                 </div>
               ))}
             </div>
-          </div>
-        </section>
 
-        {/* Waitlist Section */}
-        <section id="waitlist" className="px-6 py-20 border-t border-yellow-500/30 bg-gradient-to-b from-yellow-500/5 to-black">
-          <div className="max-w-3xl mx-auto cyber-border p-8 bg-black/80 backdrop-blur">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="status-dot bg-yellow-500 shadow-yellow-500" />
-              <h2 className="text-3xl font-black uppercase">BETA WAITLIST</h2>
+            <div className="mt-8 grid gap-4 md:grid-cols-2">
+              <div className="rounded-[1.5rem] bg-[#11233b] p-6 text-white">
+                <div className="text-sm uppercase tracking-[0.18em] text-[#f2b88a]">Execution focus</div>
+                <p className="mt-4 text-base leading-7 text-white/78">
+                  Helius-backed state visibility, Jito-protected reveals, and a protocol designed for escrow-backed service procurement rather than generic marketplaces.
+                </p>
+              </div>
+              <div className="rounded-[1.5rem] border border-[#11233b]/10 bg-[#f5f0e8] p-6">
+                <div className="text-sm uppercase tracking-[0.18em] text-[#11233b]/48">Hackathon path</div>
+                <p className="mt-4 text-base leading-7 text-[#11233b]/72">
+                  Ship the core lifecycle first, then add one bounded differentiator such as proof-of-human gating or onchain tender receipts.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="waitlist" className="px-6 pb-24">
+        <div className="mx-auto max-w-7xl rounded-[2.5rem] bg-[#e4613a] px-8 py-10 text-white shadow-[0_30px_90px_rgba(228,97,58,0.18)] md:px-12 md:py-14">
+          <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+            <div>
+              <div className="text-sm font-semibold uppercase tracking-[0.22em] text-white/70">Early access</div>
+              <h2 className="mt-4 max-w-xl text-4xl font-semibold tracking-[-0.05em] md:text-5xl">
+                Join the list for the first procurement flows on devnet.
+              </h2>
+              <p className="mt-6 max-w-xl text-lg leading-8 text-white/80">
+                We are prioritizing teams, DAO operators, and agent builders who want to test sealed-bid sourcing for digital work.
+              </p>
             </div>
 
-            <p className="text-green-400/80 mb-8 font-mono text-sm">
-              // JOIN THE INVITE-ONLY BETA PROGRAM
-              <br />
-              // EARLY ACCESS TO KAIREN PROTOCOL
-              <br />
-              // MINT YOUR KAIREN PASS • BUILD REPUTATION • UNLOCK INFRASTRUCTURE
-            </p>
-
-            <form onSubmit={handleWaitlistSubmit} className="space-y-4 mb-6">
-              <div className="flex gap-4">
+            <div className="rounded-[2rem] bg-white/12 p-6 backdrop-blur">
+              <form className="flex flex-col gap-4 sm:flex-row" onSubmit={handleSubmit}>
+                <label htmlFor="email" className="sr-only">Email address</label>
                 <input
+                  id="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ENTER EMAIL ADDRESS..."
                   required
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 bg-black border-2 border-green-500/30 text-green-400 placeholder-green-500/30 focus:border-green-500 focus:outline-none font-mono transition-all disabled:opacity-50"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="you@company.com"
+                  className="min-h-14 flex-1 rounded-full border border-white/25 bg-white/10 px-5 text-base text-white placeholder:text-white/60 focus:border-white focus:outline-none"
                 />
                 <button
                   type="submit"
-                  className="cyber-btn-yellow"
                   disabled={isSubmitting}
+                  className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#11233b] px-6 text-sm font-semibold text-white transition hover:bg-[#0b1a2d] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isSubmitting ? 'SUBMITTING...' : 'JOIN NOW →'}
+                  {isSubmitting ? 'Submitting...' : 'Request access'}
+                  <ArrowRight className="h-4 w-4" />
                 </button>
+              </form>
+
+              <div className="mt-4 min-h-6 text-sm text-white/88">
+                {status !== 'idle' && message}
               </div>
-
-              {submitStatus === 'success' && (
-                <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/30">
-                  <Check className="h-4 w-4 text-green-500" />
-                  <p className="text-xs text-green-400 font-mono">
-                    SUCCESS! Check your email to configure your beta access.
-                  </p>
-                </div>
-              )}
-
-              {submitStatus === 'error' && (
-                <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/30">
-                  <AlertCircle className="h-4 w-4 text-red-500" />
-                  <p className="text-xs text-red-400 font-mono">
-                    {errorMessage}
-                  </p>
-                </div>
-              )}
-            </form>
-
-            <p className="text-xs text-green-500/50 font-mono">
-              [LAUNCHING Q2 2026] • NO SPAM • UNSUBSCRIBE ANYTIME
-            </p>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="border-t border-green-500/30 px-6 py-8 bg-black/90">
-          <div className="max-w-6xl mx-auto flex items-center justify-between text-xs font-mono">
-            <div className="text-green-500/50">
-              © 2026 KAIREN • ALL SYSTEMS OPERATIONAL
-            </div>
-            <div className="flex items-center gap-6 text-green-500/70">
-              <Link href="/docs" className="hover:text-green-400 transition-colors">DOCS</Link>
-              <Link href="/about" className="hover:text-green-400 transition-colors">ABOUT</Link>
-              <a href="https://github.com" className="hover:text-green-400 transition-colors">GITHUB</a>
             </div>
           </div>
-        </footer>
-      </div>
-    </div>
+        </div>
+      </section>
+    </main>
   );
 }
