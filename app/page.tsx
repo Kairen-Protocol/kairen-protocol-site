@@ -116,7 +116,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f5f0e8] text-[#11233b]">
+    <main className="site-shell min-h-screen bg-[#f5f0e8] text-[#11233b]">
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(228,97,58,0.16),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(34,94,168,0.14),transparent_32%)]" />
         <div className="absolute inset-x-0 top-0 h-[28rem] bg-[linear-gradient(135deg,rgba(17,35,59,0.06),transparent_60%)]" />
@@ -154,10 +154,8 @@ export default function Home() {
           <div className="grid gap-14 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
             <div>
               <div className="mb-6 flex flex-wrap gap-3">
-                <span className="rounded-full border border-[#11233b]/12 bg-white/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#11233b]/75">
-                  Sealed-bid procurement
-                </span>
-                <span className="rounded-full border border-[#e4613a]/20 bg-[#e4613a]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#c54d27]">
+                <span className="signal-pill text-[#11233b]/78">Sealed-bid procurement</span>
+                <span className="signal-pill border-[#e4613a]/20 bg-[#e4613a]/10 text-[#c54d27] before:bg-[#11233b]">
                   Built for Solana teams & AI agents
                 </span>
               </div>
@@ -188,7 +186,7 @@ export default function Home() {
 
               <div className="mt-14 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {metrics.map((metric) => (
-                  <div key={metric.label} className="rounded-[1.5rem] border border-[#11233b]/10 bg-white/80 p-5 shadow-[0_18px_60px_rgba(17,35,59,0.07)]">
+                  <div key={metric.label} className="surface-panel rounded-[1.5rem] p-5">
                     <div className="text-3xl font-semibold tracking-[-0.05em] text-[#11233b]">{metric.value}</div>
                     <div className="mt-2 text-sm text-[#11233b]/62">{metric.label}</div>
                   </div>
@@ -196,10 +194,10 @@ export default function Home() {
               </div>
             </div>
 
-            <aside className="rounded-[2rem] border border-[#11233b]/10 bg-[#11233b] p-7 text-white shadow-[0_28px_90px_rgba(17,35,59,0.18)]">
+            <aside className="surface-panel-dark rounded-[2rem] p-7 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[#f2b88a]">Live flow</div>
+                  <div className="section-eyebrow text-[#f2b88a]">Live flow</div>
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">From tender to settlement</h2>
                 </div>
                 <Workflow className="h-7 w-7 text-[#f2b88a]" />
@@ -240,8 +238,8 @@ export default function Home() {
       <section className="border-y border-[#11233b]/10 bg-white/60">
         <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 md:grid-cols-3">
           {audiences.map((audience) => (
-            <div key={audience.title} className="rounded-[1.5rem] border border-[#11233b]/10 bg-white/90 p-6 shadow-[0_16px_50px_rgba(17,35,59,0.06)]">
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[#e4613a]">{audience.title}</div>
+            <div key={audience.title} className="surface-panel rounded-[1.5rem] p-6">
+              <div className="section-eyebrow text-[#e4613a]">{audience.title}</div>
               <p className="mt-4 text-base leading-7 text-[#11233b]/72">{audience.description}</p>
             </div>
           ))}
@@ -250,7 +248,7 @@ export default function Home() {
 
       <section id="how-it-works" className="mx-auto max-w-7xl px-6 py-24">
         <div className="max-w-2xl">
-          <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#e4613a]">How it works</div>
+          <div className="section-eyebrow text-[#e4613a]">How it works</div>
           <h2 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-[#11233b] md:text-5xl">
             A procurement workflow that behaves more like infrastructure than admin overhead.
           </h2>
@@ -264,7 +262,7 @@ export default function Home() {
             const Icon = step.icon;
 
             return (
-              <div key={step.title} className="rounded-[1.75rem] border border-[#11233b]/10 bg-white p-6 shadow-[0_20px_60px_rgba(17,35,59,0.06)]">
+              <div key={step.title} className="surface-panel rounded-[1.75rem] p-6">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#11233b] text-white">
                   <Icon className="h-5 w-5" />
                 </div>
@@ -280,7 +278,7 @@ export default function Home() {
       <section id="trust-layer" className="bg-[#11233b] text-white">
         <div className="mx-auto grid max-w-7xl gap-14 px-6 py-24 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
-            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#f2b88a]">Trust layer</div>
+            <div className="section-eyebrow text-[#f2b88a]">Trust layer</div>
             <h2 className="mt-4 text-4xl font-semibold tracking-[-0.05em] md:text-5xl">
               Fair vendor selection needs more than a payment rail.
             </h2>
@@ -311,13 +309,13 @@ export default function Home() {
       <section id="ecosystem" className="mx-auto max-w-7xl px-6 py-24">
         <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
-            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#e4613a]">Stack & ecosystem</div>
+            <div className="section-eyebrow text-[#e4613a]">Stack & ecosystem</div>
             <h2 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-[#11233b] md:text-5xl">
               Built for teams that want agent-native workflows without losing operational control.
             </h2>
           </div>
 
-          <div className="rounded-[2rem] border border-[#11233b]/10 bg-white p-8 shadow-[0_20px_60px_rgba(17,35,59,0.07)]">
+          <div className="surface-panel rounded-[2rem] p-8">
             <div className="grid gap-3 sm:grid-cols-3">
               {ecosystem.map((item) => (
                 <div key={item} className="rounded-full border border-[#11233b]/10 bg-[#f5f0e8] px-4 py-3 text-center text-sm font-semibold text-[#11233b]">
@@ -348,7 +346,7 @@ export default function Home() {
         <div className="mx-auto max-w-7xl rounded-[2.5rem] bg-[#e4613a] px-8 py-10 text-white shadow-[0_30px_90px_rgba(228,97,58,0.18)] md:px-12 md:py-14">
           <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
             <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.22em] text-white/70">Early access</div>
+              <div className="section-eyebrow text-white/70">Early access</div>
               <h2 className="mt-4 max-w-xl text-4xl font-semibold tracking-[-0.05em] md:text-5xl">
                 Join the list for the first procurement flows on devnet.
               </h2>
@@ -386,6 +384,17 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <footer className="border-t border-[#11233b]/10 px-6 py-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 text-sm text-[#11233b]/62 md:flex-row md:items-center md:justify-between">
+          <div className="footer-note text-xs uppercase">
+            Kairen Procurement Engine • Built for teams, DAOs, and AI agents
+          </div>
+          <div className="footer-note text-xs uppercase text-[#11233b]/48">
+            Solana • Sealed bids • Escrow • Agent-native workflows
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
